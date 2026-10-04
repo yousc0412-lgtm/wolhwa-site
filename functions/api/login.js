@@ -1,0 +1,2 @@
+import { makeSession, cookie, json, bodyJson } from '../_lib/auth.js';
+export async function onRequestPost({request,env}){if(!env.ADMIN_PASSWORD||!env.SESSION_SECRET)return json({error:'관리자 비밀번호와 세션 비밀키 설정이 필요합니다.'},503);const data=await bodyJson(request);if(!data||typeof data.password!=='string'||data.password.length>500)return json({error:'비밀번호를 입력해 주세요.'},400);if(data.password!==env.ADMIN_PASSWORD)return json({error:'비밀번호가 올바르지 않습니다.'},401);const token=await makeSession(env.SESSION_SECRET);return json({ok:true},200,{'Set-Cookie':cookie(token,28800)});}

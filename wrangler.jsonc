@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "wolhwa-blog",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-10-01",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "wolhwa-blog-db", "database_id": "REPLACE_WITH_DATABASE_ID" }
+  ]
+}
