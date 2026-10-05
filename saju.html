@@ -39,7 +39,7 @@
 <section class="saju-wrap">
 <form class="saju-form" id="sajuForm">
 <div class="saju-field"><label for="calendar">달력</label><select id="calendar"><option value="solar">양력</option><option value="lunar">음력</option></select></div>
-<div class="saju-field"><label for="birthDate">생년월일</label><input id="birthDate" type="date" required></div>
+<div class="saju-field"><label for="birthDate">생년월일</label><input id="birthDate" type="date" required><input id="lunarYear" type="number" min="1800" max="2100" placeholder="음력 연도" hidden></div>
 <div class="saju-field"><label for="birthTime">출생시간</label><input id="birthTime" type="time" value="10:00"></div>
 <div class="saju-field" id="lunarMonthWrap" hidden><label for="lunarMonth">음력 월</label><select id="lunarMonth"></select></div>
 <div class="saju-field" id="lunarDayWrap" hidden><label for="lunarDay">음력 일</label><select id="lunarDay"></select></div>
@@ -73,6 +73,7 @@ const isLeap=document.getElementById('isLeap');
 const monthWrap=document.getElementById('lunarMonthWrap');
 const dayWrap=document.getElementById('lunarDayWrap');
 const leapWrap=document.getElementById('leapWrap');
+const lunarYear=document.getElementById('lunarYear');
 
 for(let m=1;m<=12;m++) lunarMonth.add(new Option(m+'월',m));
 for(let d=1;d<=30;d++) lunarDay.add(new Option(d+'일',d));
@@ -80,7 +81,7 @@ for(let d=1;d<=30;d++) lunarDay.add(new Option(d+'일',d));
 calendar.addEventListener('change',()=>{
   const lunar=calendar.value==='lunar';
   monthWrap.hidden=!lunar; dayWrap.hidden=!lunar; leapWrap.hidden=!lunar;
-  birthDate.required=!lunar;
+  birthDate.required=!lunar; birthDate.hidden=lunar; lunarYear.hidden=!lunar; lunarYear.required=lunar;
 });
 
 const stems=['갑','을','병','정','무','기','경','신','임','계'];
@@ -116,7 +117,7 @@ function getBirthValues(){
     const [y,m,d]=birthDate.value.split('-').map(Number);
     return {year:y,month:m,day:d};
   }
-  return {year:Number(birthDate.value.slice(0,4)),month:Number(lunarMonth.value),day:Number(lunarDay.value)};
+  return {year:Number(lunarYear.value),month:Number(lunarMonth.value),day:Number(lunarDay.value)};
 }
 function interpret(dayStem, counts, ten){
   const names={갑:'갑목(甲木) · 큰 나무처럼 성장과 추진을 중시하는 성향',을:'을목(乙木) · 유연하게 뻗어나가며 관계와 적응을 중시하는 성향',병:'병화(丙火) · 밝게 드러내고 추진하는 성향',정:'정화(丁火) · 집중력과 섬세함을 바탕으로 깊게 파고드는 성향',무:'무토(戊土) · 버티고 쌓아가는 힘을 중시하는 성향',기:'기토(己土) · 실무와 관리, 조율에 강점을 두는 성향',경:'경금(庚金) · 결단과 실행, 원칙을 중시하는 성향',신:'신금(辛金) · 정교함과 기준, 완성도를 중시하는 성향',임:'임수(壬水) · 넓게 움직이며 정보와 흐름을 중시하는 성향',계:'계수(癸水) · 관찰력과 유연함, 세밀한 판단을 중시하는 성향'};
