@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인스타그램 이미지 저장 | 월화</title>
+<meta name="description" content="공개된 인스타그램 게시물 이미지 저장 도구">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0b0d;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}.wrap{max-width:760px;margin:auto;padding:28px 18px 60px}.back{color:#aaa;text-decoration:none;font-size:14px}.hero{padding:34px 0 24px}.badge{display:inline-block;border:1px solid #333;border-radius:999px;padding:7px 11px;color:#bbb;font-size:12px;margin-bottom:15px}h1{font-size:34px;line-height:1.2;margin:0 0 12px}.desc{color:#aaa;line-height:1.7}.card{background:#141416;border:1px solid #29292d;border-radius:18px;padding:22px;margin-top:24px}label{display:block;font-size:14px;color:#ccc;margin-bottom:9px}input{width:100%;background:#0b0b0d;border:1px solid #39393e;border-radius:11px;color:#fff;padding:14px;font-size:15px;outline:none}input:focus{border-color:#777}button{width:100%;border:0;border-radius:11px;padding:14px;margin-top:12px;background:#fff;color:#111;font-weight:700;font-size:15px;cursor:pointer}button.secondary{background:#242428;color:#fff}.status{margin-top:15px;color:#aaa;font-size:14px;line-height:1.6;min-height:24px}.preview{display:none;margin-top:20px;border-top:1px solid #29292d;padding-top:20px}.preview img{display:block;max-width:100%;max-height:620px;margin:auto;border-radius:12px}.notice{margin-top:20px;padding:15px;border-radius:12px;background:#1b1b1f;color:#aaa;font-size:13px;line-height:1.65}.notice strong{color:#ddd}.foot{margin-top:26px;color:#777;font-size:12px;line-height:1.7}.error{color:#ffb4b4}
+</style>
+</head>
+<body>
+<main class="wrap">
+<a class="back" href="index.html">← 월화 도구 모음으로</a>
+<section class="hero">
+<span class="badge">IMAGE TOOL</span>
+<h1>인스타그램 이미지 저장</h1>
+<p class="desc">공개된 인스타그램 게시물 주소를 입력해 이미지 저장을 시도할 수 있습니다.</p>
+</section>
+<section class="card">
+<label for="url">인스타그램 게시물 URL</label>
+<input id="url" type="url" inputmode="url" placeholder="https://www.instagram.com/p/..." autocomplete="off">
+<button id="loadBtn">이미지 불러오기</button>
+<div id="status" class="status"></div>
+<div id="preview" class="preview">
+<img id="image" alt="인스타그램 이미지 미리보기">
+<button id="saveBtn" class="secondary">이미지 저장</button>
+</div>
+<div class="notice"><strong>이용 안내</strong><br>
+공개적으로 접근 가능한 콘텐츠 중 다운로드 권한이 있는 이미지에 사용해 주세요.
+비공개 계정, 로그인 필요 콘텐츠, 접근 제한을 우회하는 기능은 제공하지 않습니다.
+인스타그램의 정책이나 페이지 구조가 바뀌면 일부 게시물은 불러오지 못할 수 있습니다.</div>
+</section>
+<p class="foot">월화는 사용자가 권리를 가진 콘텐츠의 개인적인 저장을 위한 도구를 제공합니다.</p>
+</main>
+<script>
+const input=document.getElementById('url'),btn=document.getElementById('loadBtn'),status=document.getElementById('status');
+function valid(v){try{const u=new URL(v);return ['www.instagram.com','instagram.com','m.instagram.com'].includes(u.hostname)&&/^\/(p|reel|tv)\//.test(u.pathname)}catch(e){return false}}
+btn.onclick=()=>{const v=input.value.trim();if(!valid(v)){status.className='status error';status.textContent='인스타그램 게시물 URL을 정확히 입력해 주세요.';return}status.className='status error';status.textContent='URL은 정상적으로 확인되었습니다. 다만 브라우저에서 Instagram 페이지를 직접 읽는 것은 접근 제한(CORS) 때문에 현재 버전에서는 자동 이미지 추출을 지원하지 않습니다.'};
+</script>
+</body>
+</html>
