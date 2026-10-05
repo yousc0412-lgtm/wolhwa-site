@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>무료 사주 풀이 | 월화</title>
+<meta name="description" content="생년월일과 출생시간을 입력해 한국 사주명리학 기준의 기본 사주 정보를 확인해 보세요.">
+<link rel="stylesheet" href="style.css">
+<style>
+.saju-wrap{max-width:860px;margin:auto;padding:55px 24px 85px}
+.saju-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.saju-field{display:grid;gap:7px}.saju-field.full{grid-column:1/-1}
+.saju-field label{font-size:12px;font-weight:700;color:#9da5ad}
+.saju-field input,.saju-field select{height:48px;border:1px solid #343a40;border-radius:10px;padding:0 12px;background:#101315;color:#e7eaed;font:inherit}
+.saju-field input:focus,.saju-field select:focus{outline:2px solid var(--accent)}
+.saju-button{grid-column:1/-1;height:50px;border:0;border-radius:11px;background:#e9edf0;color:#101214;font-weight:800;cursor:pointer}
+.saju-result{margin-top:22px;display:grid;gap:14px}
+.saju-panel{padding:23px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.saju-panel h2{font-size:20px;margin:0 0 15px}.saju-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.saju-pillar{padding:18px 10px;text-align:center;border-radius:13px;background:#20252a;border:1px solid #2d3339}
+.saju-pillar small{display:block;color:#7e8790;font-size:10px;margin-bottom:7px}.saju-pillar strong{font-size:24px}
+.saju-note{font-size:12px;color:#858d95;line-height:1.8}.saju-badges{display:flex;gap:8px;flex-wrap:wrap}.saju-badge{padding:7px 11px;border-radius:100px;background:#20252a;border:1px solid #30363c;color:#cfd5da;font-size:11px}
+.saju-disclaimer{font-size:10px;color:#68717a;line-height:1.7;margin-top:16px}
+@media(max-width:600px){.saju-wrap{padding:42px 17px 65px}.saju-form{grid-template-columns:1fr;padding:18px}.saju-field.full{grid-column:auto}.saju-button{grid-column:auto}.saju-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="월화 홈"><span class="brand-mark">月花</span><span>월화 <b>계산기</b></span></a><nav><a href="calculators.html">계산기</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main>
+<section class="category-hero"><p class="eyebrow">WOLHWA SAJU</p><h1>무료 사주 <span>풀이</span></h1><p>한국 사주명리학을 기준으로 기본 사주 정보를 확인해 보세요.</p></section>
+<section class="saju-wrap">
+<form class="saju-form" id="sajuForm">
+<div class="saju-field"><label for="birthDate">생년월일</label><input id="birthDate" type="date" required></div>
+<div class="saju-field"><label for="birthTime">출생시간</label><input id="birthTime" type="time"></div>
+<div class="saju-field"><label for="calendar">달력</label><select id="calendar"><option value="solar">양력</option><option value="lunar" disabled>음력 (준비 중)</option></select></div>
+<div class="saju-field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
+<div class="saju-field full"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 제주특별자치도"></div>
+<button class="saju-button" type="submit">무료 사주 확인하기</button>
+</form>
+<div id="result" class="saju-result" hidden></div>
+</section>
+</main>
+<footer class="site-footer"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>계산기</b></span></a><p>생활에 필요한 도구와 정보를 한곳에.</p></footer>
+<script>
+const stems=['갑','을','병','정','무','기','경','신','임','계'];
+const branches=['자','축','인','묘','진','사','오','미','신','유','술','해'];
+const element={갑:'목',을:'목',병:'화',정:'화',무:'토',기:'토',경:'금',신:'금',임:'수',계:'수',자:'수',축:'토',인:'목',묘:'목',진:'토',사:'화',오:'화',미:'토',신:'금',유:'금',술:'토',해:'수'};
+const animal={자:'쥐',축:'소',인:'호랑이',묘:'토끼',진:'용',사:'뱀',오:'말',미:'양',신:'원숭이',유:'닭',술:'개',해:'돼지'};
+function sexagenary(i){return stems[(i%10+10)%10]+branches[(i%12+12)%12]}
+function dayPillar(date){
+  // 2000-01-07 is commonly used as a 갑진(40) reference in the 60-cycle.
+  const ref=Date.UTC(2000,0,7), d=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate());
+  return (40+Math.floor((d-ref)/86400000))%60;
+}
+function yearPillar(y){return (y-4)%60}
+function hourBranch(h){
+  if(h===null)return null;
+  return branches[Math.floor(((h+1)%24)/2)];
+}
+function hourStem(dayIndex,h){
+  const hb=Math.floor(((h+1)%24)/2);
+  const dayStem=dayIndex%10;
+  const ziStart={0:0,5:0,1:2,6:2,2:4,7:4,3:6,8:6,4:8,9:8}[dayStem];
+  return (ziStart+hb)%10;
+}
+function renderPillar(label,p){
+  if(!p)return '<div class="saju-pillar"><small>'+label+'</small><strong>—</strong></div>';
+  return '<div class="saju-pillar"><small>'+label+'</small><strong>'+p+'</strong></div>';
+}
+function explain(dayStem){
+  const names={갑:'갑목 · 큰 나무',을:'을목 · 풀과 덩굴',병:'병화 · 태양',정:'정화 · 등불',무:'무토 · 산과 대지',기:'기토 · 밭과 흙',경:'경금 · 큰 쇠',신:'신금 · 보석과 칼',임:'임수 · 큰 물',계:'계수 · 이슬과 비'};
+  return names[dayStem]||'';
+}
+document.getElementById('sajuForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const ds=document.getElementById('birthDate').value;
+  if(!ds)return;
+  const date=new Date(ds+'T00:00:00');
+  const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
+  const time=document.getElementById('birthTime').value;
+  const hour=time?Number(time.slice(0,2)):null;
+  const yi=(y-4)%60, di=dayPillar(date);
+  const yp=sexagenary(yi), dp=sexagenary(di);
+  let hp=null;
+  if(hour!==null){const hb=hourBranch(hour);hp=stems[hourStem(di,hour)]+hb}
+  const dayStem=stems[di%10];
+  const dayBranch=branches[di%12];
+  const elems=[element[stems[yi%10]],element[branches[yi%12]],element[stems[di%10]],element[dayBranch]];
+  if(hp){elems.push(element[hp[0]],element[hp[1]])}
+  const counts={목:0,화:0,토:0,금:0,수:0}; elems.forEach(x=>counts[x]++);
+  const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  document.getElementById('result').hidden=false;
+  document.getElementById('result').innerHTML=
+  '<div class="saju-panel"><h2>기본 사주 원국</h2><div class="saju-grid">'+renderPillar('년주',yp)+renderPillar('월주','절기 계산 준비 중')+renderPillar('일주',dp)+renderPillar('시주',hp)+'</div><p class="saju-note">일주를 중심으로 보는 기본 정보예요. 출생시간을 입력하면 시주까지 표시됩니다.</p></div>'+
+  '<div class="saju-panel"><h2>일간 성향</h2><p class="saju-note"><b>'+dayStem+'일간</b> · '+explain(dayStem)+'<br>사주명리에서는 일간을 나 자신을 나타내는 중심 기준으로 봅니다.</p></div>'+
+  '<div class="saju-panel"><h2>기본 오행 분포</h2><div class="saju-badges">'+Object.entries(counts).map(([k,v])=>'<span class="saju-badge">'+k+' '+v+'</span>').join('')+'</div><p class="saju-note">현재 화면의 오행 분포는 기본 천간·지지 기준의 간단 표시입니다. 지장간과 절기 기준까지 반영한 정밀 분석과는 다를 수 있습니다. 가장 많이 표시된 오행은 <b>'+dominant+'</b>입니다.</p></div>'+
+  '<div class="saju-panel"><h2>입력 정보</h2><p class="saju-note">'+y+'년 '+m+'월 '+d+'일 · '+(time||'출생시간 미입력')+' · '+document.getElementById('gender').value+'</p><p class="saju-disclaimer">사주 풀이는 전통 명리학에 기반한 참고용 콘텐츠입니다. 미래를 확정적으로 예측하거나 의료·법률·금융 판단을 대신하지 않습니다. 현재 버전은 양력 기준이며 음력 변환과 절기 기반 월주 계산은 추후 정밀화할 예정입니다.</p></div>';
+});
+</script>
+</body></html>
