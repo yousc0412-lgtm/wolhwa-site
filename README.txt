@@ -46,3 +46,4 @@ Cloudflare 공식 안내:
 https://developers.cloudflare.com/pages/framework-guides/deploy-anything/
 https://developers.cloudflare.com/pages/functions/get-started/
 https://developers.cloudflare.com/pages/functions/bindings/
+배포 설정 완료
