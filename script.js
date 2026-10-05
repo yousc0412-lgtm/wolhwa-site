@@ -139,7 +139,7 @@ function calculate() {
   }
 }
 grid.addEventListener("click", e => {
-  const card=e.target.closest("[data-tool]");
+  const card=e.target.closest("button[data-tool]");
   if(card) openTool(card.dataset.tool);
 });
 $("#closeDialog").addEventListener("click",()=>dialog.close());
