@@ -7,7 +7,7 @@
 <meta name="description" content="수능, 모의고사, 자격증 시험과 공부에 사용할 수 있는 무료 시험 타이머입니다. 국어·수학·영어·탐구 시간과 집중 공부 타이머를 간편하게 이용하세요.">
 <link rel="stylesheet" href="calculator-page.css">
 <style>
-.timer-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}.timer-tab{border:1px solid #ddd;background:#fff;border-radius:10px;padding:10px 13px;font:inherit;font-size:12px;cursor:pointer}.timer-tab.active{background:#171717;color:#fff;border-color:#171717}.timer-panel{display:none}.timer-panel.active{display:block}.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0}.preset{border:1px solid #ddd;background:#fff;border-radius:10px;padding:12px 8px;cursor:pointer;font:inherit}.preset strong{display:block;font-size:13px}.preset small{display:block;color:#777;margin-top:3px}.timer-display{font-size:clamp(48px,12vw,78px);font-weight:800;letter-spacing:-3px;text-align:center;padding:28px 0 18px;font-variant-numeric:tabular-nums}.timer-status{text-align:center;color:#777;font-size:12px;margin-bottom:18px}.timer-actions{display:flex;gap:8px}.timer-actions button{flex:1}.danger{background:#777}.d-day-box{text-align:center;background:#f6f6f4;border-radius:14px;padding:24px;margin-top:14px}.d-day-number{font-size:48px;font-weight:800;letter-spacing:-2px}.d-day-date{color:#777;font-size:12px}.study-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.study-note{font-size:11px;color:#777;line-height:1.7;margin-top:16px}@media(max-width:560px){.preset-grid{grid-template-columns:repeat(2,1fr)}.study-presets{grid-template-columns:1fr 1fr}.timer-display{padding:22px 0 12px}}
+.timer-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}.timer-tab{border:1px solid #ddd;background:#fff;border-radius:10px;padding:10px 13px;font:inherit;font-size:12px;cursor:pointer}.timer-tab.active{background:#171717;color:#fff;border-color:#171717}.timer-panel{display:none}.timer-panel.active{display:block}.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0}.preset{border:1px solid #ddd;background:#fff;border-radius:10px;padding:12px 8px;cursor:pointer;font:inherit}.preset strong{display:block;font-size:13px}.preset small{display:block;color:#777;margin-top:3px}.timer-display{font-size:clamp(48px,12vw,78px);font-weight:800;letter-spacing:-3px;text-align:center;padding:28px 0 18px;font-variant-numeric:tabular-nums}.timer-status{text-align:center;color:#777;font-size:12px;margin-bottom:18px}.timer-actions{display:flex;gap:8px}.timer-actions button{flex:1}.danger{background:#777}.d-day-box{text-align:center;background:#f6f6f4;border-radius:14px;padding:24px;margin-top:14px}.d-day-number{font-size:48px;font-weight:800;letter-spacing:-2px}.d-day-date{color:#777;font-size:12px}.study-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.custom-time{margin-top:18px;padding-top:18px;border-top:1px solid #2d2d2d}.custom-title{font-size:13px;font-weight:700;color:#ddd;margin-bottom:2px}.time-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.study-note{font-size:11px;color:#777;line-height:1.7;margin-top:16px}@media(max-width:560px){.time-inputs{grid-template-columns:1fr 1fr 1fr}.preset-grid{grid-template-columns:repeat(2,1fr)}.study-presets{grid-template-columns:1fr 1fr}.timer-display{padding:22px 0 12px}}
 </style>
 </head>
 <body>
@@ -29,14 +29,22 @@
 </div>
 
 <div class="timer-panel active" id="exam">
-<label class="field-label" for="examPreset">시험 선택</label>
+<label class="field-label" for="examPreset">빠른 선택</label>
 <div class="preset-grid">
 <button class="preset" data-min="80"><strong>수능 국어</strong><small>80분</small></button>
 <button class="preset" data-min="100"><strong>수능 수학</strong><small>100분</small></button>
 <button class="preset" data-min="70"><strong>수능 영어</strong><small>70분</small></button>
 <button class="preset" data-min="30"><strong>탐구 1과목</strong><small>30분</small></button>
 </div>
-<div class="field"><label for="customMinutes">직접 설정 (분)</label><input id="customMinutes" type="number" min="1" max="600" value="60"></div>
+<div class="custom-time">
+<div class="custom-title">원하는 시간 직접 설정</div>
+<div class="time-inputs">
+<div class="field"><label for="customHours">시간</label><input id="customHours" type="number" min="0" max="99" value="1"></div>
+<div class="field"><label for="customMinutes">분</label><input id="customMinutes" type="number" min="0" max="59" value="0"></div>
+<div class="field"><label for="customSeconds">초</label><input id="customSeconds" type="number" min="0" max="59" value="0"></div>
+</div>
+<button class="secondary-button full" id="setCustomTime" type="button">이 시간으로 설정</button>
+</div>
 <div class="timer-display" id="examDisplay">60:00</div>
 <div class="timer-status" id="examStatus" aria-live="polite">시험 시작 전</div>
 <div class="timer-actions"><button class="primary-button" id="examStart">시작</button><button class="secondary-button" id="examReset">초기화</button></div>
@@ -70,12 +78,13 @@ const $=s=>document.querySelector(s);
 let examSeconds=3600, examTimer=null, studySeconds=1500, studyTimer=null;
 function fmt(s){s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function stop(id){clearInterval(id);return null}
-function setExam(min){examSeconds=min*60;examTimer=stop(examTimer);$('#examDisplay').textContent=fmt(examSeconds);$('#examStatus').textContent='시험 시작 전';$('#customMinutes').value=min}
+function setExam(min){examSeconds=min*60;examTimer=stop(examTimer);$('#examDisplay').textContent=fmt(examSeconds);$('#examStatus').textContent='시험 시작 전';$('#customHours').value=Math.floor(min/60);$('#customMinutes').value=min%60;$('#customSeconds').value=0}
+function setCustomTime(){const h=Math.min(99,Math.max(0,Number($('#customHours').value)||0));const m=Math.min(59,Math.max(0,Number($('#customMinutes').value)||0));const s=Math.min(59,Math.max(0,Number($('#customSeconds').value)||0));const total=h*3600+m*60+s;if(total<1){$('#examStatus').textContent='1초 이상 입력해 주세요.';return}examSeconds=total;examTimer=stop(examTimer);$('#examDisplay').textContent=fmt(examSeconds);$('#examStatus').textContent='설정 완료 · 시작 버튼을 눌러주세요';$('#customHours').value=h;$('#customMinutes').value=m;$('#customSeconds').value=s}
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.timer-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.timer-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active')}));
 document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>setExam(Number(b.dataset.min))));
-$('#customMinutes').addEventListener('change',()=>{let m=Math.min(600,Math.max(1,Number($('#customMinutes').value)||60));setExam(m)});
+$('#setCustomTime').addEventListener('click',setCustomTime);
 $('#examStart').addEventListener('click',()=>{if(examTimer){examTimer=stop(examTimer);$('#examStart').textContent='계속';$('#examStatus').textContent='일시정지';return}$('#examStatus').textContent='시험 진행 중';$('#examStart').textContent='일시정지';examTimer=setInterval(()=>{examSeconds--;$('#examDisplay').textContent=fmt(examSeconds);if(examSeconds<=0){examTimer=stop(examTimer);$('#examStart').textContent='시작';$('#examStatus').textContent='시험 시간이 끝났습니다.';alert('시험 시간이 끝났습니다.');}},1000)});
-$('#examReset').addEventListener('click',()=>setExam(Number($('#customMinutes').value)||60));
+$('#examReset').addEventListener('click',()=>{examTimer=stop(examTimer);examSeconds=3600;$('#examDisplay').textContent=fmt(examSeconds);$('#examStatus').textContent='시험 시작 전';$('#customHours').value=1;$('#customMinutes').value=0;$('#customSeconds').value=0;$('#examStart').textContent='시작'});
 document.querySelectorAll('[data-study]').forEach(b=>b.addEventListener('click',()=>{studySeconds=Number(b.dataset.study)*60;studyTimer=stop(studyTimer);$('#studyDisplay').textContent=fmt(studySeconds);$('#studyStatus').textContent='집중 공부 준비';$('#studyStart').textContent='시작'}));
 $('#studyStart').addEventListener('click',()=>{if(studyTimer){studyTimer=stop(studyTimer);$('#studyStart').textContent='계속';$('#studyStatus').textContent='일시정지';return}$('#studyStatus').textContent='집중 공부 중';$('#studyStart').textContent='일시정지';studyTimer=setInterval(()=>{studySeconds--;$('#studyDisplay').textContent=fmt(studySeconds);if(studySeconds<=0){studyTimer=stop(studyTimer);$('#studyStart').textContent='시작';$('#studyStatus').textContent='집중 시간이 끝났습니다.';alert('집중 시간이 끝났습니다.');}},1000)});
 $('#studyReset').addEventListener('click',()=>{studyTimer=stop(studyTimer);studySeconds=25*60;$('#studyDisplay').textContent=fmt(studySeconds);$('#studyStatus').textContent='집중 공부 준비';$('#studyStart').textContent='시작'});
