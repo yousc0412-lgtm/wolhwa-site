@@ -44,32 +44,67 @@
 const stems=['갑','을','병','정','무','기','경','신','임','계'];
 const branches=['자','축','인','묘','진','사','오','미','신','유','술','해'];
 const element={갑:'목',을:'목',병:'화',정:'화',무:'토',기:'토',경:'금',신:'금',임:'수',계:'수',자:'수',축:'토',인:'목',묘:'목',진:'토',사:'화',오:'화',미:'토',신:'금',유:'금',술:'토',해:'수'};
-const animal={자:'쥐',축:'소',인:'호랑이',묘:'토끼',진:'용',사:'뱀',오:'말',미:'양',신:'원숭이',유:'닭',술:'개',해:'돼지'};
-function sexagenary(i){return stems[(i%10+10)%10]+branches[(i%12+12)%12]}
+
+function mod(n,m){return ((n%m)+m)%m}
+function sexagenary(i){return stems[mod(i,10)]+branches[mod(i,12)]}
+
 function dayPillar(date){
-  // 2000-01-07 is commonly used as a 갑진(40) reference in the 60-cycle.
-  const ref=Date.UTC(2000,0,7), d=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate());
-  return (40+Math.floor((d-ref)/86400000))%60;
+  // 2000-01-07 = 甲辰(40) 기준. 날짜 차이를 60갑자에 대입.
+  const ref=Date.UTC(2000,0,7);
+  const d=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate());
+  return mod(40+Math.floor((d-ref)/86400000),60);
 }
-function yearPillar(y){return (y-4)%60}
-function hourBranch(h){
+
+function yearPillarIndex(y){return mod(y-4,60)}
+
+function hourBranchIndex(h){
   if(h===null)return null;
-  return branches[Math.floor(((h+1)%24)/2)];
+  // 자시 23:00~00:59, 이후 2시간 단위.
+  return Math.floor(((h+1)%24)/2);
 }
-function hourStem(dayIndex,h){
-  const hb=Math.floor(((h+1)%24)/2);
-  const dayStem=dayIndex%10;
-  const ziStart={0:0,5:0,1:2,6:2,2:4,7:4,3:6,8:6,4:8,9:8}[dayStem];
-  return (ziStart+hb)%10;
+
+function hourStemIndex(dayIndex,h){
+  const hb=hourBranchIndex(h);
+  const dayStemIndex=mod(dayIndex,10);
+  const ziStart={0:0,5:0,1:2,6:2,2:4,7:4,3:6,8:6,4:8,9:8}[dayStemIndex];
+  return mod(ziStart+hb,10);
 }
+
+function monthBranchIndex(date){
+  // 사주 월지는 음력 월이 아니라 12절기 구간으로 정한다.
+  // 절입 '시각'까지 정밀 판정하기 전의 날짜 기준 보정값.
+  const m=date.getMonth()+1, d=date.getDate();
+  if((m===2&&d>=4)||(m===3&&d<6)) return 2;  // 寅
+  if((m===3&&d>=6)||(m===4&&d<5)) return 3;  // 卯
+  if((m===4&&d>=5)||(m===5&&d<6)) return 4;  // 辰
+  if((m===5&&d>=6)||(m===6&&d<6)) return 5;  // 巳
+  if((m===6&&d>=6)||(m===7&&d<7)) return 6;  // 午
+  if((m===7&&d>=7)||(m===8&&d<8)) return 7;  // 未
+  if((m===8&&d>=8)||(m===9&&d<8)) return 8;  // 申
+  if((m===9&&d>=8)||(m===10&&d<8)) return 9; // 酉
+  if((m===10&&d>=8)||(m===11&&d<7)) return 10; // 戌
+  if((m===11&&d>=7)||(m===12&&d<7)) return 11; // 亥
+  if((m===12&&d>=7)||(m===1&&d<6)) return 0; // 子
+  return 1; // 丑: 1월 6일~2월 3일
+}
+
+function monthPillar(date,yearIndex){
+  const branchIndex=monthBranchIndex(date);
+  // 寅월의 월간: 甲/己년=丙, 乙/庚=戊, 丙/辛=庚, 丁/壬=壬, 戊/癸=甲
+  const yearStemIndex=mod(yearIndex,10);
+  const yinStart={0:2,5:2,1:4,6:4,2:6,7:6,3:8,8:8,4:0,9:0}[yearStemIndex];
+  const stemIndex=mod(yinStart+(branchIndex-2),10);
+  return stems[stemIndex]+branches[branchIndex];
+}
+
 function renderPillar(label,p){
-  if(!p)return '<div class="saju-pillar"><small>'+label+'</small><strong>—</strong></div>';
-  return '<div class="saju-pillar"><small>'+label+'</small><strong>'+p+'</strong></div>';
+  return '<div class="saju-pillar"><small>'+label+'</small><strong>'+ (p||'—') +'</strong></div>';
 }
 function explain(dayStem){
   const names={갑:'갑목 · 큰 나무',을:'을목 · 풀과 덩굴',병:'병화 · 태양',정:'정화 · 등불',무:'무토 · 산과 대지',기:'기토 · 밭과 흙',경:'경금 · 큰 쇠',신:'신금 · 보석과 칼',임:'임수 · 큰 물',계:'계수 · 이슬과 비'};
   return names[dayStem]||'';
 }
+
 document.getElementById('sajuForm').addEventListener('submit',e=>{
   e.preventDefault();
   const ds=document.getElementById('birthDate').value;
@@ -78,22 +113,34 @@ document.getElementById('sajuForm').addEventListener('submit',e=>{
   const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
   const time=document.getElementById('birthTime').value;
   const hour=time?Number(time.slice(0,2)):null;
-  const yi=(y-4)%60, di=dayPillar(date);
-  const yp=sexagenary(yi), dp=sexagenary(di);
+
+  const yi=yearPillarIndex(y);
+  const di=dayPillar(date);
+  const yp=sexagenary(yi);
+  const mp=monthPillar(date,yi);
+  const dp=sexagenary(di);
+
   let hp=null;
-  if(hour!==null){const hb=hourBranch(hour);hp=stems[hourStem(di,hour)]+hb}
-  const dayStem=stems[di%10];
-  const dayBranch=branches[di%12];
-  const elems=[element[stems[yi%10]],element[branches[yi%12]],element[stems[di%10]],element[dayBranch]];
-  if(hp){elems.push(element[hp[0]],element[hp[1]])}
-  const counts={목:0,화:0,토:0,금:0,수:0}; elems.forEach(x=>counts[x]++);
+  if(hour!==null){
+    const hb=hourBranchIndex(hour);
+    hp=stems[hourStemIndex(di,hour)]+branches[hb];
+  }
+
+  const dayStem=stems[mod(di,10)];
+  const chars=[yp[0],yp[1],mp[0],mp[1],dp[0],dp[1]];
+  if(hp) chars.push(hp[0],hp[1]);
+
+  const counts={목:0,화:0,토:0,금:0,수:0};
+  chars.forEach(ch=>{if(element[ch])counts[element[ch]]++;});
   const dominant=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+  const genderText=document.getElementById('gender').value==='male'?'남성':'여성';
+
   document.getElementById('result').hidden=false;
   document.getElementById('result').innerHTML=
-  '<div class="saju-panel"><h2>기본 사주 원국</h2><div class="saju-grid">'+renderPillar('년주',yp)+renderPillar('월주','절기 계산 준비 중')+renderPillar('일주',dp)+renderPillar('시주',hp)+'</div><p class="saju-note">일주를 중심으로 보는 기본 정보예요. 출생시간을 입력하면 시주까지 표시됩니다.</p></div>'+
+  '<div class="saju-panel"><h2>기본 사주 원국</h2><div class="saju-grid">'+renderPillar('년주',yp)+renderPillar('월주',mp)+renderPillar('일주',dp)+renderPillar('시주',hp)+'</div><p class="saju-note">년주는 입춘, 월주는 12절기 기준으로 잡습니다. 현재 버전은 절입 시각까지의 초정밀 판정 전 단계라 경계일 출생은 실제 절입 시각 확인이 필요합니다.</p></div>'+
   '<div class="saju-panel"><h2>일간 성향</h2><p class="saju-note"><b>'+dayStem+'일간</b> · '+explain(dayStem)+'<br>사주명리에서는 일간을 나 자신을 나타내는 중심 기준으로 봅니다.</p></div>'+
-  '<div class="saju-panel"><h2>기본 오행 분포</h2><div class="saju-badges">'+Object.entries(counts).map(([k,v])=>'<span class="saju-badge">'+k+' '+v+'</span>').join('')+'</div><p class="saju-note">현재 화면의 오행 분포는 기본 천간·지지 기준의 간단 표시입니다. 지장간과 절기 기준까지 반영한 정밀 분석과는 다를 수 있습니다. 가장 많이 표시된 오행은 <b>'+dominant+'</b>입니다.</p></div>'+
-  '<div class="saju-panel"><h2>입력 정보</h2><p class="saju-note">'+y+'년 '+m+'월 '+d+'일 · '+(time||'출생시간 미입력')+' · '+document.getElementById('gender').value+'</p><p class="saju-disclaimer">사주 풀이는 전통 명리학에 기반한 참고용 콘텐츠입니다. 미래를 확정적으로 예측하거나 의료·법률·금융 판단을 대신하지 않습니다. 현재 버전은 양력 기준이며 음력 변환과 절기 기반 월주 계산은 추후 정밀화할 예정입니다.</p></div>';
+  '<div class="saju-panel"><h2>기본 오행 분포</h2><div class="saju-badges">'+Object.entries(counts).map(([k,v])=>'<span class="saju-badge">'+k+' '+v+'</span>').join('')+'</div><p class="saju-note">천간·지지의 대표 오행을 단순 집계한 기본값입니다. 지장간 가중치, 신강·신약, 조후·용신 등을 반영한 정밀 풀이와는 다릅니다. 현재 가장 많이 표시된 오행은 <b>'+dominant+'</b>입니다.</p></div>'+
+  '<div class="saju-panel"><h2>입력 정보</h2><p class="saju-note">'+y+'년 '+m+'월 '+d+'일 · '+(time||'출생시간 미입력')+' · '+genderText+'</p><p class="saju-disclaimer">사주 풀이는 전통 명리학에 기반한 참고용 콘텐츠입니다. 미래를 확정적으로 예측하거나 의료·법률·금융 판단을 대신하지 않습니다.</p></div>';
 });
 </script>
 </body></html>
