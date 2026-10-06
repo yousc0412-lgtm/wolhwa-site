@@ -43,13 +43,16 @@ function draw(){
  if(!loaded)return;canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0);
  const label=text.value.trim();if(!label)return;
  const fontSize=Math.max(12,Math.round(Math.min(canvas.width,canvas.height)*(Number(size.value)/100)));
- ctx.font='700 '+fontSize+'px Arial, sans-serif';ctx.textBaseline='middle';const metrics=ctx.measureText(label), pad=Math.max(12,Math.round(fontSize*.65));
+ ctx.font='700 '+fontSize+'px Arial, sans-serif';ctx.textBaseline='alphabetic';const metrics=ctx.measureText(label), pad=Math.max(12,Math.round(fontSize*.65));
+ const ascent=metrics.actualBoundingBoxAscent||fontSize*.75, descent=metrics.actualBoundingBoxDescent||fontSize*.25;
+ const minX=pad, maxX=Math.max(pad,canvas.width-pad-metrics.width), minY=pad+ascent, maxY=Math.max(minY,canvas.height-pad-descent);
  let x,y;const p=position.value;
- if(p==='br'){x=canvas.width-pad-metrics.width;y=canvas.height-pad-fontSize/2}
- else if(p==='bl'){x=pad;y=canvas.height-pad-fontSize/2}
- else if(p==='tr'){x=canvas.width-pad-metrics.width;y=pad+fontSize/2}
- else if(p==='tl'){x=pad;y=pad+fontSize/2}
- else{x=(canvas.width-metrics.width)/2;y=canvas.height/2}
+ if(p==='br'){x=maxX;y=maxY}
+ else if(p==='bl'){x=minX;y=maxY}
+ else if(p==='tr'){x=maxX;y=minY}
+ else if(p==='tl'){x=minX;y=minY}
+ else{x=(canvas.width-metrics.width)/2;y=(canvas.height-ascent+descent)/2+ascent}
+ x=Math.min(Math.max(x,minX),maxX);y=Math.min(Math.max(y,minY),maxY)
  ctx.save();ctx.globalAlpha=Number(opacity.value)/100;ctx.fillStyle=color.value;ctx.fillText(label,x,y);ctx.restore();
 }
 fileInput.addEventListener('change',e=>setFile(e.target.files[0]));
