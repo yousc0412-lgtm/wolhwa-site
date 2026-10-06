@@ -1,42 +1,21 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>인스타그램 이미지 저장 | 월화</title>
-<meta name="description" content="공개된 인스타그램 게시물 이미지 저장 도구">
-<style>
-*{box-sizing:border-box}body{margin:0;background:#0b0b0d;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif}.wrap{max-width:760px;margin:auto;padding:28px 18px 60px}.back{color:#aaa;text-decoration:none;font-size:14px}.hero{padding:34px 0 24px}.badge{display:inline-block;border:1px solid #333;border-radius:999px;padding:7px 11px;color:#bbb;font-size:12px;margin-bottom:15px}h1{font-size:34px;line-height:1.2;margin:0 0 12px}.desc{color:#aaa;line-height:1.7}.card{background:#141416;border:1px solid #29292d;border-radius:18px;padding:22px;margin-top:24px}label{display:block;font-size:14px;color:#ccc;margin-bottom:9px}input{width:100%;background:#0b0b0d;border:1px solid #39393e;border-radius:11px;color:#fff;padding:14px;font-size:15px;outline:none}input:focus{border-color:#777}button{width:100%;border:0;border-radius:11px;padding:14px;margin-top:12px;background:#fff;color:#111;font-weight:700;font-size:15px;cursor:pointer}button.secondary{background:#242428;color:#fff}.status{margin-top:15px;color:#aaa;font-size:14px;line-height:1.6;min-height:24px}.preview{display:none;margin-top:20px;border-top:1px solid #29292d;padding-top:20px}.preview img{display:block;max-width:100%;max-height:620px;margin:auto;border-radius:12px}.notice{margin-top:20px;padding:15px;border-radius:12px;background:#1b1b1f;color:#aaa;font-size:13px;line-height:1.65}.notice strong{color:#ddd}.foot{margin-top:26px;color:#777;font-size:12px;line-height:1.7}.error{color:#ffb4b4}
-</style>
-</head>
-<body>
-<main class="wrap">
-<a class="back" href="index.html">← 월화 도구 모음으로</a>
-<section class="hero">
-<span class="badge">IMAGE TOOL</span>
-<h1>인스타그램 이미지 저장</h1>
-<p class="desc">공개된 인스타그램 게시물 주소를 입력해 이미지 저장을 시도할 수 있습니다.</p>
-</section>
-<section class="card">
-<label for="url">인스타그램 게시물 URL</label>
-<input id="url" type="url" inputmode="url" placeholder="https://www.instagram.com/p/..." autocomplete="off">
-<button id="loadBtn">이미지 불러오기</button>
-<div id="status" class="status"></div>
-<div id="preview" class="preview">
-<img id="image" alt="인스타그램 이미지 미리보기">
-<button id="saveBtn" class="secondary">이미지 저장</button>
-</div>
-<div class="notice"><strong>이용 안내</strong><br>
-공개적으로 접근 가능한 콘텐츠 중 다운로드 권한이 있는 이미지에 사용해 주세요.
-비공개 계정, 로그인 필요 콘텐츠, 접근 제한을 우회하는 기능은 제공하지 않습니다.
-인스타그램의 정책이나 페이지 구조가 바뀌면 일부 게시물은 불러오지 못할 수 있습니다.</div>
-</section>
-<p class="foot">월화는 사용자가 권리를 가진 콘텐츠의 개인적인 저장을 위한 도구를 제공합니다.</p>
-</main>
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인스타그램 이미지 여러 장 추출·저장 | 월화</title>
+<meta name="description" content="인스타그램 공개 게시물 링크를 입력하면 게시물에 포함된 이미지를 추출해 미리보고 개별 또는 전체 저장할 수 있는 도구.">
+<link rel="stylesheet" href="style.css"><style>
+.ig-tool{max-width:1100px;margin:0 auto;padding:0 20px 80px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px}.form{display:flex;gap:10px}.form input{flex:1;min-width:0;background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 14px}.form button,.actions button{border:1px solid var(--line);border-radius:12px;padding:13px 18px;background:var(--accent);color:#111;font-weight:700;cursor:pointer}.status{margin-top:14px;color:var(--muted);min-height:22px}.status.error{color:#e99}.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}.photo{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;overflow:hidden}.photo img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}.photo-body{padding:11px}.photo-body button{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:9px;padding:9px;cursor:pointer}.actions{display:flex;gap:10px;margin-top:18px}.actions button.secondary{background:var(--surface-2);color:var(--text)}.notice{margin-top:18px;padding:14px 16px;background:var(--surface-2);border-radius:14px;color:var(--muted);font-size:13px;line-height:1.7}.empty{margin-top:20px;padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}@media(max-width:760px){.form{flex-direction:column}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:16px}}@media(max-width:430px){.gallery{grid-template-columns:1fr}}
+</style></head>
+<body><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">INSTAGRAM IMAGE EXTRACTOR</p><h1>인스타 사진을<br><span>링크 하나로 추출해요.</span></h1><p>공개 Instagram 게시물 링크를 넣으면 게시물에 포함된 이미지를 찾아 한곳에서 확인하고 저장할 수 있어요.</p></section>
+<section class="ig-tool"><div class="panel"><div class="form"><input id="url" type="url" placeholder="https://www.instagram.com/p/..." autocomplete="off"><button id="extract">사진 추출하기</button></div><div id="status" class="status"></div><div id="actions" class="actions" hidden><button id="all">전체 이미지 저장</button><button id="clear" class="secondary">초기화</button></div><div id="gallery" class="gallery"></div><div id="empty" class="empty">인스타그램 게시물 링크를 입력하면 이미지가 여기에 표시됩니다.</div><div class="notice"><strong>이용 안내</strong><br>공개적으로 접근 가능한 게시물만 처리합니다. 로그인·비공개 계정·접근 제한을 우회하지 않습니다. Instagram의 페이지 구조나 접근 정책이 바뀌면 일부 게시물은 추출되지 않을 수 있습니다.</div></div></section></main>
+<footer class="site-footer"><a class="brand" href="image-tools.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
 <script>
-const input=document.getElementById('url'),btn=document.getElementById('loadBtn'),status=document.getElementById('status');
-function valid(v){try{const u=new URL(v);return ['www.instagram.com','instagram.com','m.instagram.com'].includes(u.hostname)&&/^\/(p|reel|tv)\//.test(u.pathname)}catch(e){return false}}
-btn.onclick=()=>{const v=input.value.trim();if(!valid(v)){status.className='status error';status.textContent='인스타그램 게시물 URL을 정확히 입력해 주세요.';return}status.className='status error';status.textContent='URL은 정상적으로 확인되었습니다. 다만 브라우저에서 Instagram 페이지를 직접 읽는 것은 접근 제한(CORS) 때문에 현재 버전에서는 자동 이미지 추출을 지원하지 않습니다.'};
-</script>
-</body>
-</html>
+const urlEl=document.getElementById('url'),status=document.getElementById('status'),gallery=document.getElementById('gallery'),empty=document.getElementById('empty'),actions=document.getElementById('actions');let images=[];
+function fileName(i,u){try{const p=new URL(u).pathname.split('/').pop()||'';const e=(p.match(/\.(jpg|jpeg|png|webp)$/i)||[])[1]||'jpg';return 'instagram-'+String(i+1).padStart(2,'0')+'.'+e.toLowerCase()}catch{return 'instagram-'+String(i+1).padStart(2,'0')+'.jpg'}}
+function render(){gallery.innerHTML='';empty.hidden=images.length>0;actions.hidden=!images.length;images.forEach((src,i)=>{const card=document.createElement('article');card.className='photo';const img=document.createElement('img');img.src=src;img.alt='Instagram 이미지 '+(i+1);img.loading='lazy';const body=document.createElement('div');body.className='photo-body';const b=document.createElement('button');b.textContent='이 이미지 저장';b.onclick=()=>download(src,i);body.appendChild(b);card.append(img,body);gallery.appendChild(card)})}
+async function download(src,i){try{const res=await fetch(src,{mode:'cors'});if(!res.ok)throw 0;const blob=await res.blob();const a=document.createElement('a');const u=URL.createObjectURL(blob);a.href=u;a.download=fileName(i,src);a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}catch{window.open(src,'_blank')}}
+document.getElementById('extract').onclick=async()=>{const v=urlEl.value.trim();if(!v){status.textContent='Instagram 게시물 링크를 입력해 주세요.';return}status.textContent='게시물에서 이미지를 찾는 중...';gallery.innerHTML='';empty.hidden=false;actions.hidden=true;try{const res=await fetch('/api/instagram-images?url='+encodeURIComponent(v));const data=await res.json();if(!res.ok)throw new Error(data.error||'추출에 실패했습니다.');images=data.images||[];if(!images.length){status.textContent='이미지를 찾지 못했어요. 공개 게시물인지 확인하거나 잠시 후 다시 시도해 주세요.';render();return}status.textContent='총 '+images.length+'장의 이미지를 찾았어요.';render()}catch(e){status.className='status error';status.textContent=e.message||'이미지 추출에 실패했어요.'}};
+document.getElementById('all').onclick=async()=>{for(let i=0;i<images.length;i++){await download(images[i],i);await new Promise(r=>setTimeout(r,350))}};
+document.getElementById('clear').onclick=()=>{urlEl.value='';images=[];status.className='status';status.textContent='';render()};
+urlEl.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('extract').click()});
+</script></body></html>
