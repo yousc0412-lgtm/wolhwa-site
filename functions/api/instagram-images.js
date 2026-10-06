@@ -96,7 +96,6 @@ function extractImages(row) {
       .replace(/&amp;/g, "&")
       .replace(/\\\//g, "/")
       .trim();
-
     if (!/^https?:\/\//i.test(url)) return;
     if (!/(cdninstagram|fbcdn|instagram)/i.test(url)) return;
     if (seen.has(url)) return;
@@ -104,50 +103,71 @@ function extractImages(row) {
     found.push(url);
   };
 
-  const addMediaItems = (items) => {
+  const isImageItem = (item) => {
+    const type = String(item?.type || item?.media_type || item?.mediaType || "").toLowerCase();
+    return !type || type.includes("photo") || type.includes("image");
+  };
+
+  const readItems = (items) => {
     if (!Array.isArray(items)) return;
-    const ordered = [...items].sort((a, b) => Number(a?.index ?? 0) - Number(b?.index ?? 0));
-
+    const ordered = [...items].sort((a, b) =>
+      Number(a?.index ?? a?.position ?? 0) - Number(b?.index ?? b?.position ?? 0)
+    );
     for (const item of ordered) {
-      const type = String(item?.type || item?.media_type || item?.mediaType || "").toLowerCase();
-      // This tool is for photos. Skip video-only carousel entries.
-      if (type && !type.includes("photo") && !type.includes("image")) continue;
-
-      add(item?.url);
-      add(item?.image_url);
-      add(item?.image);
-      add(item?.display_url);
-      add(item?.thumbnail_url);
-      add(item?.thumbnail);
+      if (!item || !isImageItem(item)) continue;
+      add(item.url);
+      add(item.image_url);
+      add(item.image);
+      add(item.display_url);
+      add(item.thumbnail_url);
+      add(item.thumbnail);
+      add(item.media_url);
+      add(item.src);
     }
   };
 
-  // crawlerbros/instagram-post-scraper returns every carousel slide
-  // in media_items, preserving its order.
-  addMediaItems(row.media_items);
-  addMediaItems(row.mediaItems);
+  // Documented Crawler Bros output: media_items[] contains every
+  // carousel slide in order.
+  readItems(row.media_items);
+  readItems(row.mediaItems);
 
-  // Fallbacks for alternate output shapes.
-  add(row.image_url);
-  add(row.image);
-  add(row.thumbnail_url);
-  add(row.thumbnail);
-
-  if (Array.isArray(row.imageUrls)) {
-    for (const url of row.imageUrls) add(url);
+  // Also support wrappers/alternate actor response shapes.
+  for (const container of [row.data, row.result, row.output]) {
+    if (container && typeof container === "object") {
+      readItems(container.media_items);
+      readItems(container.mediaItems);
+    }
   }
 
-  if (Array.isArray(row.mediaUrls)) {
-    for (const url of row.mediaUrls) add(url);
+  // Direct single-media fields.
+  for (const key of ["image_url", "image", "display_url", "thumbnail_url", "thumbnail"]) {
+    add(row[key]);
   }
 
-  if (Array.isArray(row.carousel_media)) {
-    addMediaItems(row.carousel_media);
-  }
-
-  if (Array.isArray(row.media)) {
-    addMediaItems(row.media);
-  }
+  // Last-resort recursive scan: if the actor wraps media_items deeper
+  // than expected, still collect objects that look like media records.
+  const walk = (value, depth = 0) => {
+    if (!value || depth > 6) return;
+    if (Array.isArray(value)) {
+      const looksLikeMedia = value.some(item =>
+        item && typeof item === "object" &&
+        ("url" in item || "media_url" in item || "image_url" in item) &&
+        ("width" in item || "height" in item || "type" in item || "media_type" in item)
+      );
+      if (looksLikeMedia) readItems(value);
+      for (const item of value) walk(item, depth + 1);
+      return;
+    }
+    if (typeof value === "object") {
+      for (const [key, child] of Object.entries(value)) {
+        if (/media[_-]?items?|carousel|images|photos/i.test(key)) {
+          readItems(child);
+        }
+        walk(child, depth + 1);
+      }
+    }
+  };
+  walk(row);
 
   return found;
 }
