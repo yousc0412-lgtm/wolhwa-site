@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>뽀모도로 타이머 | 집중 공부 타이머 | 월화</title>
+<meta name="description" content="집중과 휴식을 반복하며 공부와 업무를 관리하는 무료 뽀모도로 타이머입니다. 집중 시간과 휴식 시간을 직접 설정할 수 있습니다.">
+<link rel="stylesheet" href="calculator-page.css">
+<style>
+.pomo-mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.mode-button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:12px 8px;cursor:pointer;font:inherit;font-weight:700}
+.mode-button.active{background:#171717;color:#fff;border-color:#171717}
+.timer-display{font-size:clamp(56px,15vw,92px);font-weight:800;letter-spacing:-4px;text-align:center;padding:30px 0 12px;font-variant-numeric:tabular-nums}
+.timer-status{text-align:center;color:#777;font-size:12px;min-height:18px;margin-bottom:18px}
+.progress-wrap{height:6px;background:#eee;border-radius:99px;overflow:hidden;margin:0 0 22px}
+.progress{height:100%;width:100%;background:#171717;transform-origin:left center;transition:width .3s linear}
+.timer-actions{display:flex;gap:8px}.timer-actions button{flex:1}
+.session-count{text-align:center;margin:18px 0 0;font-size:12px;color:#777}
+.settings{margin-top:22px;padding-top:20px;border-top:1px solid #2d2d2d}
+.settings-title{font-size:13px;font-weight:700;color:#ddd;margin-bottom:10px}
+.time-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.full{width:100%;margin-top:10px}
+.note{font-size:11px;color:#777;line-height:1.7;margin-top:16px}
+@media(max-width:560px){.timer-display{padding:24px 0 10px}}
+</style>
+</head>
+<body>
+<main class="calc-page">
+<header class="calc-header">
+<a class="calc-brand" href="index.html"><span class="brand-mark">月</span><span>월화 <b>타이머</b></span></a>
+<a class="back-link" href="timers.html">← 타이머 목록</a>
+</header>
+
+<section class="calc-hero">
+<p class="eyebrow">POMODORO TIMER</p>
+<h1>집중하고 쉬고,<br><span>다시 집중하세요.</span></h1>
+<p>집중 시간과 휴식 시간을 반복하며 공부와 업무 흐름을 관리하는 뽀모도로 타이머입니다.</p>
+</section>
+
+<section class="calc-card">
+<div class="pomo-mode" role="tablist" aria-label="타이머 모드">
+<button class="mode-button active" id="focusMode" type="button">집중 시간</button>
+<button class="mode-button" id="breakMode" type="button">휴식 시간</button>
+</div>
+
+<div class="timer-display" id="display" aria-live="polite">25:00</div>
+<div class="progress-wrap" aria-hidden="true"><div class="progress" id="progress"></div></div>
+<div class="timer-status" id="status" aria-live="polite">집중할 준비가 됐어요.</div>
+
+<div class="timer-actions">
+<button class="primary-button" id="start" type="button">시작</button>
+<button class="secondary-button" id="reset" type="button">초기화</button>
+</div>
+
+<div class="session-count">완료한 집중 세션 <strong id="sessions">0</strong>회</div>
+
+<div class="settings">
+<div class="settings-title">시간 설정</div>
+<div class="time-inputs">
+<div class="field"><label for="focusMinutes">집중 시간 (분)</label><input id="focusMinutes" type="number" min="1" max="120" value="25" inputmode="numeric"></div>
+<div class="field"><label for="breakMinutes">휴식 시간 (분)</label><input id="breakMinutes" type="number" min="1" max="60" value="5" inputmode="numeric"></div>
+</div>
+<button class="secondary-button full" id="applySettings" type="button">설정 적용</button>
+</div>
+
+<p class="note">기본 설정은 25분 집중 + 5분 휴식입니다. 집중 시간이 끝나면 자동으로 휴식 시간으로 전환됩니다.</p>
+</section>
+
+<section class="notice-card">
+<strong>뽀모도로 사용법</strong>
+<p>① 집중 시간을 정하고 시작 → ② 집중이 끝나면 휴식 → ③ 휴식이 끝나면 다시 집중. 한 사이클씩 반복하면서 공부나 업무를 관리해 보세요.</p>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+let focusMinutes=25;
+let breakMinutes=5;
+let mode='focus';
+let totalSeconds=focusMinutes*60;
+let remainingSeconds=totalSeconds;
+let timer=null;
+let sessions=0;
+
+function formatTime(seconds){
+  seconds=Math.max(0,Math.floor(seconds));
+  const m=Math.floor(seconds/60);
+  const s=seconds%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function stopTimer(){
+  if(timer!==null)clearInterval(timer);
+  timer=null;
+}
+
+function render(){
+  $('#display').textContent=formatTime(remainingSeconds);
+  const ratio=totalSeconds>0?Math.max(0,Math.min(1,remainingSeconds/totalSeconds)):0;
+  $('#progress').style.width=(ratio*100)+'%';
+}
+
+function updateModeButtons(){
+  $('#focusMode').classList.toggle('active',mode==='focus');
+  $('#breakMode').classList.toggle('active',mode==='break');
+}
+
+function loadMode(nextMode){
+  stopTimer();
+  mode=nextMode;
+  totalSeconds=(mode==='focus'?focusMinutes:breakMinutes)*60;
+  remainingSeconds=totalSeconds;
+  updateModeButtons();
+  render();
+  $('#start').textContent='시작';
+  $('#status').textContent=mode==='focus'?'집중할 준비가 됐어요.':'휴식할 준비가 됐어요.';
+}
+
+function readSettings(){
+  focusMinutes=Math.min(120,Math.max(1,Number($('#focusMinutes').value)||0));
+  breakMinutes=Math.min(60,Math.max(1,Number($('#breakMinutes').value)||0));
+  $('#focusMinutes').value=focusMinutes;
+  $('#breakMinutes').value=breakMinutes;
+}
+
+$('#focusMode').addEventListener('click',()=>loadMode('focus'));
+$('#breakMode').addEventListener('click',()=>loadMode('break'));
+
+$('#applySettings').addEventListener('click',()=>{
+  readSettings();
+  loadMode(mode);
+  $('#status').textContent='설정이 적용됐어요. 시작 버튼을 눌러주세요.';
+});
+
+$('#start').addEventListener('click',()=>{
+  if(timer!==null){
+    stopTimer();
+    $('#start').textContent='계속';
+    $('#status').textContent='일시정지했어요.';
+    return;
+  }
+
+  $('#start').textContent='일시정지';
+  $('#status').textContent=mode==='focus'?'집중 중':'휴식 중';
+
+  timer=setInterval(()=>{
+    remainingSeconds--;
+    render();
+
+    if(remainingSeconds<=0){
+      stopTimer();
+
+      if(mode==='focus'){
+        sessions++;
+        $('#sessions').textContent=sessions;
+        mode='break';
+        totalSeconds=breakMinutes*60;
+        remainingSeconds=totalSeconds;
+        updateModeButtons();
+        render();
+        $('#start').textContent='시작';
+        $('#status').textContent='집중 완료! 휴식 시간이에요.';
+        alert('집중 시간이 끝났어요. 이제 휴식 시간입니다.');
+      }else{
+        mode='focus';
+        totalSeconds=focusMinutes*60;
+        remainingSeconds=totalSeconds;
+        updateModeButtons();
+        render();
+        $('#start').textContent='시작';
+        $('#status').textContent='휴식 완료! 다시 집중해 볼까요?';
+        alert('휴식 시간이 끝났어요. 다시 집중할 시간입니다.');
+      }
+    }
+  },1000);
+});
+
+$('#reset').addEventListener('click',()=>{
+  readSettings();
+  loadMode('focus');
+});
+
+render();
+</script>
+</body>
+</html>
