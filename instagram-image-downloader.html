@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인스타그램 이미지 여러 장 저장 | 월화</title>
+<meta name="description" content="공개 콘텐츠의 이미지 URL을 여러 개 넣어 한 번에 저장할 수 있는 이미지 다운로드 도구.">
+<link rel="stylesheet" href="style.css"><style>
+.batch{max-width:1000px;margin:0 auto;padding:0 20px 80px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px}.notice{padding:14px 16px;border-radius:14px;background:var(--surface-2);color:var(--muted);font-size:13px;line-height:1.7;margin-bottom:18px}.notice strong{color:var(--text)}textarea{width:100%;min-height:210px;box-sizing:border-box;background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px;resize:vertical;font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}.actions{display:flex;gap:10px;margin-top:12px}.actions button{flex:1;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:13px;cursor:pointer}.actions .primary{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700}.status{margin-top:16px;color:var(--muted);font-size:14px;min-height:22px}.list{margin-top:18px;display:grid;gap:8px}.item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}.item.ok .dot{background:var(--accent)}.item.fail .dot{background:#d66}.item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style></head>
+<body><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">INSTAGRAM IMAGE DOWNLOADER</p><h1>인스타 이미지<br><span>여러 장을 한 번에.</span></h1><p>공개 콘텐츠에서 복사한 이미지 주소를 여러 개 넣어 순서대로 저장하세요.</p></section>
+<section class="batch"><div class="panel"><div class="notice"><strong>사용 방법</strong><br>인스타그램에서 저장할 이미지의 <b>직접 이미지 주소(URL)</b>를 한 줄에 하나씩 붙여넣어 주세요. 게시물 페이지 URL이 아니라 이미지 파일 주소가 필요합니다. 본인이 저장할 권리가 있는 공개 콘텐츠에 사용해 주세요.</div>
+<textarea id="urls" placeholder="https://scontent...jpg
+https://scontent...jpg
+https://scontent...webp"></textarea>
+<div class="actions"><button id="clear" type="button">초기화</button><button id="download" class="primary" type="button">여러 장 저장하기</button></div>
+<div id="status" class="status"></div><div id="list" class="list"></div></div></section></main>
+<footer class="site-footer"><a class="brand" href="image-tools.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const urls=document.getElementById('urls'),status=document.getElementById('status'),list=document.getElementById('list');
+function getUrls(){return [...new Set(urls.value.split(/\n|\r/).map(x=>x.trim()).filter(Boolean))]}
+function safeName(url,i){try{const u=new URL(url);const last=u.pathname.split('/').pop()||'';const ext=(last.match(/\.(jpg|jpeg|png|webp|gif)(?=$|\?)/i)||[])[1]||'jpg';return 'instagram-'+String(i+1).padStart(2,'0')+'.'+ext.toLowerCase()}catch{return 'instagram-'+String(i+1).padStart(2,'0')+'.jpg'}}
+async function saveOne(url,i,row){try{const res=await fetch(url,{mode:'cors'});if(!res.ok)throw new Error('HTTP '+res.status);const blob=await res.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=safeName(url,i);document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);row.classList.add('ok');row.querySelector('span').textContent='저장 완료 · '+safeName(url,i);return true}catch(e){row.classList.add('fail');row.querySelector('span').textContent='브라우저 다운로드 제한 · '+url;return false}}
+document.getElementById('download').onclick=async()=>{const arr=getUrls();if(!arr.length){status.textContent='이미지 주소를 한 줄에 하나씩 입력해 주세요.';return}list.innerHTML='';status.textContent='총 '+arr.length+'개를 저장하는 중...';let ok=0;for(let i=0;i<arr.length;i++){const row=document.createElement('div');row.className='item';row.innerHTML='<i class="dot"></i><span>'+arr[i]+'</span>';list.appendChild(row);if(await saveOne(arr[i],i,row))ok++;await new Promise(r=>setTimeout(r,350))}status.textContent=ok+'개 저장 완료 / '+arr.length+'개 요청';};
+document.getElementById('clear').onclick=()=>{urls.value='';status.textContent='';list.innerHTML=''};
+</script></body></html>
