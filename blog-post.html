@@ -30,6 +30,7 @@
 const root=document.getElementById('post');
 const id=new URLSearchParams(location.search).get('id');
 function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderBody(v){return String(v??'').split(/(\[IMAGE:https?:\/\/[^\]]+\])/g).map(part=>{const m=part.match(/^\[IMAGE:(https?:\/\/[^\]]+)\]$/);if(m)return '<img src="'+esc(m[1])+'" alt="게시글 이미지" loading="lazy">';return esc(part)}).join('')}
 async function load(){
   if(!id){root.innerHTML='<div class="error">게시글 주소가 올바르지 않습니다.</div>';return}
   try{
