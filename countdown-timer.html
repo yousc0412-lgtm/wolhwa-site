@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>카운트다운 타이머 | 무료 일반 타이머 | 월화</title>
+<meta name="description" content="시간을 직접 설정하고 시작, 일시정지, 초기화할 수 있는 무료 카운트다운 타이머입니다.">
+<link rel="stylesheet" href="calculator-page.css">
+<style>
+.timer-display{font-size:clamp(56px,15vw,92px);font-weight:800;letter-spacing:-4px;text-align:center;padding:34px 0 24px;font-variant-numeric:tabular-nums}
+.timer-status{text-align:center;color:#777;font-size:12px;margin-bottom:18px;min-height:18px}
+.timer-actions{display:flex;gap:8px}.timer-actions button{flex:1}
+.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0 22px}
+.preset{border:1px solid #ddd;background:#fff;border-radius:10px;padding:13px 8px;cursor:pointer;font:inherit}
+.preset strong{display:block;font-size:13px}.preset small{display:block;color:#777;margin-top:3px}
+.custom-time{padding-top:20px;border-top:1px solid #2d2d2d}
+.custom-title{font-size:13px;font-weight:700;color:#ddd;margin-bottom:9px}
+.time-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.full{width:100%;margin-top:10px}
+.note{font-size:11px;color:#777;line-height:1.7;margin-top:16px}
+@media(max-width:560px){.preset-grid{grid-template-columns:repeat(2,1fr)}.timer-display{padding:24px 0 16px}}
+</style>
+</head>
+<body>
+<main class="calc-page">
+<header class="calc-header">
+<a class="calc-brand" href="index.html"><span class="brand-mark">月</span><span>월화 <b>타이머</b></span></a>
+<a class="back-link" href="timers.html">← 타이머 목록</a>
+</header>
+
+<section class="calc-hero">
+<p class="eyebrow">COUNTDOWN TIMER</p>
+<h1>원하는 시간을<br><span>딱 맞춰보세요.</span></h1>
+<p>요리, 운동, 휴식, 공부 등 어떤 상황에서도 간편하게 사용할 수 있는 일반 카운트다운 타이머입니다.</p>
+</section>
+
+<section class="calc-card">
+<label class="field-label">빠른 시간 설정</label>
+<div class="preset-grid">
+<button class="preset" type="button" data-min="1"><strong>1분</strong><small>간단한 타이머</small></button>
+<button class="preset" type="button" data-min="5"><strong>5분</strong><small>짧은 휴식</small></button>
+<button class="preset" type="button" data-min="10"><strong>10분</strong><small>집중 시작</small></button>
+<button class="preset" type="button" data-min="30"><strong>30분</strong><small>긴 작업</small></button>
+</div>
+
+<div class="custom-time">
+<div class="custom-title">원하는 시간 직접 설정</div>
+<div class="time-inputs">
+<div class="field"><label for="hours">시간</label><input id="hours" type="number" min="0" max="99" value="0" inputmode="numeric"></div>
+<div class="field"><label for="minutes">분</label><input id="minutes" type="number" min="0" max="59" value="5" inputmode="numeric"></div>
+<div class="field"><label for="seconds">초</label><input id="seconds" type="number" min="0" max="59" value="0" inputmode="numeric"></div>
+</div>
+<button class="secondary-button full" id="setTime" type="button">이 시간으로 설정</button>
+</div>
+
+<div class="timer-display" id="display" aria-live="polite">05:00</div>
+<div class="timer-status" id="status" aria-live="polite">시작할 준비가 됐어요.</div>
+<div class="timer-actions">
+<button class="primary-button" id="start" type="button">시작</button>
+<button class="secondary-button" id="reset" type="button">초기화</button>
+</div>
+<p class="note">타이머는 브라우저에서 실행됩니다. 페이지를 닫거나 새로고침하면 진행 상태가 초기화될 수 있어요.</p>
+</section>
+
+<section class="notice-card">
+<strong>이렇게 활용해 보세요</strong>
+<p>라면 끓이는 시간, 운동 세트, 짧은 휴식, 업무 집중 시간처럼 정확한 시간이 필요한 상황에 편하게 사용할 수 있어요.</p>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+let totalSeconds=5*60;
+let remainingSeconds=totalSeconds;
+let timer=null;
+
+function formatTime(seconds){
+  seconds=Math.max(0,Math.floor(seconds));
+  const h=Math.floor(seconds/3600);
+  const m=Math.floor((seconds%3600)/60);
+  const s=seconds%60;
+  if(h>0)return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function stopTimer(){
+  if(timer!==null)clearInterval(timer);
+  timer=null;
+}
+
+function render(){
+  $('#display').textContent=formatTime(remainingSeconds);
+}
+
+function setTimer(total){
+  total=Math.max(1,Math.floor(total));
+  stopTimer();
+  totalSeconds=total;
+  remainingSeconds=total;
+  render();
+  $('#start').textContent='시작';
+  $('#status').textContent='시작할 준비가 됐어요.';
+}
+
+function syncInputs(total){
+  const h=Math.floor(total/3600);
+  const m=Math.floor((total%3600)/60);
+  const s=total%60;
+  $('#hours').value=h;
+  $('#minutes').value=m;
+  $('#seconds').value=s;
+}
+
+function readInputs(){
+  const h=Math.min(99,Math.max(0,Number($('#hours').value)||0));
+  const m=Math.min(59,Math.max(0,Number($('#minutes').value)||0));
+  const s=Math.min(59,Math.max(0,Number($('#seconds').value)||0));
+  $('#hours').value=h;
+  $('#minutes').value=m;
+  $('#seconds').value=s;
+  return h*3600+m*60+s;
+}
+
+document.querySelectorAll('[data-min]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const minutes=Number(button.dataset.min);
+    setTimer(minutes*60);
+    syncInputs(minutes*60);
+  });
+});
+
+$('#setTime').addEventListener('click',()=>{
+  const total=readInputs();
+  if(total<1){
+    $('#status').textContent='1초 이상 입력해 주세요.';
+    return;
+  }
+  setTimer(total);
+  $('#status').textContent='설정 완료 · 시작 버튼을 눌러주세요.';
+});
+
+$('#start').addEventListener('click',()=>{
+  if(timer!==null){
+    stopTimer();
+    $('#start').textContent='계속';
+    $('#status').textContent='일시정지했어요.';
+    return;
+  }
+
+  if(remainingSeconds<=0){
+    remainingSeconds=totalSeconds;
+    render();
+  }
+
+  $('#start').textContent='일시정지';
+  $('#status').textContent='타이머 진행 중';
+
+  timer=setInterval(()=>{
+    remainingSeconds--;
+    render();
+
+    if(remainingSeconds<=0){
+      stopTimer();
+      remainingSeconds=0;
+      render();
+      $('#start').textContent='시작';
+      $('#status').textContent='시간이 끝났어요!';
+      alert('타이머 시간이 끝났어요!');
+    }
+  },1000);
+});
+
+$('#reset').addEventListener('click',()=>{
+  setTimer(totalSeconds);
+  syncInputs(totalSeconds);
+});
+
+render();
+</script>
+</body>
+</html>
