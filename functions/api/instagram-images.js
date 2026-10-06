@@ -89,7 +89,7 @@ function extractImages(row) {
 
   const add = (value) => {
     if (typeof value !== "string") return;
-    let url = value
+    const url = value
       .replace(/\\u0026/g, "&")
       .replace(/\\u003D/g, "=")
       .replace(/\\u002F/g, "/")
@@ -104,59 +104,53 @@ function extractImages(row) {
     found.push(url);
   };
 
-  const addCandidates = (value) => {
-    if (!Array.isArray(value)) return;
-    const sorted = [...value].sort((a, b) => {
-      const aa = Number(a?.width || 0) * Number(a?.height || 0);
-      const bb = Number(b?.width || 0) * Number(b?.height || 0);
-      return bb - aa;
-    });
-    if (sorted[0]?.url) add(sorted[0].url);
+  const addMediaItems = (items) => {
+    if (!Array.isArray(items)) return;
+    const ordered = [...items].sort((a, b) => Number(a?.index ?? 0) - Number(b?.index ?? 0));
+
+    for (const item of ordered) {
+      const type = String(item?.type || item?.media_type || item?.mediaType || "").toLowerCase();
+      // This tool is for photos. Skip video-only carousel entries.
+      if (type && !type.includes("photo") && !type.includes("image")) continue;
+
+      add(item?.url);
+      add(item?.image_url);
+      add(item?.image);
+      add(item?.display_url);
+      add(item?.thumbnail_url);
+      add(item?.thumbnail);
+    }
   };
 
-  // Common normalized fields from Instagram post scrapers.
+  // crawlerbros/instagram-post-scraper returns every carousel slide
+  // in media_items, preserving its order.
+  addMediaItems(row.media_items);
+  addMediaItems(row.mediaItems);
+
+  // Fallbacks for alternate output shapes.
   add(row.image_url);
   add(row.image);
   add(row.thumbnail_url);
   add(row.thumbnail);
-  addCandidates(row.image_versions);
-  addCandidates(row.image_versions2?.candidates);
 
-  // Carousel: preserve Instagram's slide order.
-  if (Array.isArray(row.carousel_media)) {
-    for (const item of row.carousel_media) {
-      add(item?.image_url);
-      add(item?.image);
-      add(item?.thumbnail_url);
-      addCandidates(item?.image_versions);
-      addCandidates(item?.image_versions2?.candidates);
-    }
+  if (Array.isArray(row.imageUrls)) {
+    for (const url of row.imageUrls) add(url);
   }
 
-  // Some Actors return media under mediaItems or media.
-  for (const key of ["mediaItems", "media", "items"]) {
-    if (!Array.isArray(row[key])) continue;
-    for (const item of row[key]) {
-      add(item?.image_url);
-      add(item?.image);
-      add(item?.thumbnail_url);
-      add(item?.display_url);
-      addCandidates(item?.image_versions);
-      addCandidates(item?.image_versions2?.candidates);
-      if (Array.isArray(item?.carousel_media)) {
-        for (const child of item.carousel_media) {
-          add(child?.image_url);
-          add(child?.image);
-          addCandidates(child?.image_versions);
-          addCandidates(child?.image_versions2?.candidates);
-        }
-      }
-    }
+  if (Array.isArray(row.mediaUrls)) {
+    for (const url of row.mediaUrls) add(url);
+  }
+
+  if (Array.isArray(row.carousel_media)) {
+    addMediaItems(row.carousel_media);
+  }
+
+  if (Array.isArray(row.media)) {
+    addMediaItems(row.media);
   }
 
   return found;
 }
-
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
