@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이미지 회전·뒤집기 | 월화</title>
+<meta name="description" content="JPG, PNG, WebP 이미지를 브라우저에서 회전하고 좌우·상하로 뒤집어 저장하는 무료 이미지 도구.">
+<link rel="stylesheet" href="style.css">
+<style>
+.rotate-tool{max-width:980px;margin:0 auto;padding:0 20px 80px}
+.tool-panel{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px}
+.drop-zone{border:1px dashed var(--line);border-radius:18px;padding:38px 20px;text-align:center;cursor:pointer;background:var(--surface-2)}
+.drop-zone.dragover{border-color:var(--accent);transform:translateY(-1px)}
+.drop-zone strong{display:block;font-size:18px;margin-bottom:8px}.drop-zone small{color:var(--muted)}
+.file-input{display:none}.tool-actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.tool-actions button{border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:11px 15px;cursor:pointer}
+.tool-actions button:hover{border-color:var(--accent)}
+.preview-wrap{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;align-items:start}
+.preview-box{min-height:420px;border:1px solid var(--line);border-radius:18px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:20px}
+.preview-box img{max-width:100%;max-height:620px;object-fit:contain;transition:transform .2s ease}
+.settings{border:1px solid var(--line);border-radius:18px;padding:18px}
+.settings label{display:block;margin:0 0 8px;color:var(--muted);font-size:13px}
+.settings select,.settings input[type=range]{width:100%;box-sizing:border-box}
+.settings select{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px}
+.range-row{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.stats{display:grid;gap:10px;margin-top:18px}.stat{background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.stat small{display:block;color:var(--muted);margin-bottom:4px}.stat b{font-size:15px}
+.hint{color:var(--muted);font-size:13px;line-height:1.6;margin-top:14px}
+@media(max-width:760px){.preview-wrap{grid-template-columns:1fr}.preview-box{min-height:280px}.tool-panel{padding:16px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a>
+<nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav>
+</header>
+<main>
+<section class="category-hero"><p class="eyebrow">IMAGE ROTATE & FLIP</p><h1>이미지를<br><span>원하는 방향으로.</span></h1><p>사진을 90도씩 회전하거나 좌우·상하로 뒤집어 바로 저장하세요.</p></section>
+<section class="rotate-tool"><div class="tool-panel">
+<label class="drop-zone" id="dropZone" for="fileInput"><strong>이미지를 여기에 끌어놓거나 클릭해서 선택</strong><small>JPG · PNG · WebP 지원 / 브라우저에서 바로 처리</small><input class="file-input" id="fileInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<div class="tool-actions">
+<button type="button" id="leftBtn">↶ 왼쪽 90°</button><button type="button" id="rightBtn">↷ 오른쪽 90°</button><button type="button" id="flipHBtn">↔ 좌우 뒤집기</button><button type="button" id="flipVBtn">↕ 상하 뒤집기</button><button type="button" id="resetBtn">초기화</button>
+</div>
+<div class="preview-wrap"><div class="preview-box"><img id="preview" alt="이미지 미리보기"></div>
+<aside class="settings"><label for="format">저장 형식</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>
+<div class="range-row"><label for="quality">JPG·WebP 품질</label><b id="qualityValue">90%</b></div><input id="quality" type="range" min="10" max="100" value="90">
+<div class="stats"><div class="stat"><small>현재 회전</small><b id="rotationText">0°</b></div><div class="stat"><small>현재 크기</small><b id="dimensionText">-</b></div></div>
+<button type="button" id="downloadBtn" style="width:100%;margin-top:18px;background:var(--accent);color:#111;border:1px solid var(--accent);border-radius:12px;padding:12px;font-weight:700;cursor:pointer">회전·뒤집은 이미지 저장</button>
+<p class="hint">이미지는 서버로 업로드하지 않고 이 브라우저에서만 처리돼요. JPG로 저장하면 투명 영역은 흰색 배경으로 바뀝니다.</p>
+</aside></div></div></section>
+</main>
+<footer class="site-footer"><a class="brand" href="image-tools.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const fileInput=document.getElementById('fileInput'),dropZone=document.getElementById('dropZone'),preview=document.getElementById('preview'),format=document.getElementById('format'),quality=document.getElementById('quality'),qualityValue=document.getElementById('qualityValue'),rotationText=document.getElementById('rotationText'),dimensionText=document.getElementById('dimensionText');
+let image=new Image(),objectUrl='',fileName='wolhwa-image',rotation=0,flipX=1,flipY=1,width=0,height=0;
+function setFile(file){if(!file||!file.type.startsWith('image/'))return;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);image=new Image();image.onload=()=>{width=image.naturalWidth;height=image.naturalHeight;rotation=0;flipX=1;flipY=1;preview.src=objectUrl;updateUI()};image.src=objectUrl;fileName=file.name.replace(/\.[^.]+$/,'')||'wolhwa-image'}
+function updateUI(){rotationText.textContent=((rotation%360)+360)%360+'°';const rotated=rotation%180!==0;dimensionText.textContent=(rotated?height:width)+' × '+(rotated?width:height)+' px';preview.style.transform='rotate('+rotation+'deg) scaleX('+flipX+') scaleY('+flipY+')'}
+fileInput.addEventListener('change',e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
+dropZone.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+document.getElementById('leftBtn').onclick=()=>{rotation-=90;updateUI()};document.getElementById('rightBtn').onclick=()=>{rotation+=90;updateUI()};document.getElementById('flipHBtn').onclick=()=>{flipX*=-1;updateUI()};document.getElementById('flipVBtn').onclick=()=>{flipY*=-1;updateUI()};document.getElementById('resetBtn').onclick=()=>{rotation=0;flipX=1;flipY=1;updateUI()};quality.oninput=()=>qualityValue.textContent=quality.value+'%';
+document.getElementById('downloadBtn').onclick=()=>{if(!image.src||!width)return alert('먼저 이미지를 선택해주세요.');const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),rad=rotation*Math.PI/180,rotated=rotation%180!==0;canvas.width=rotated?height:width;canvas.height=rotated?width:height;if(format.value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height)}ctx.save();ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(rad);ctx.scale(flipX,flipY);ctx.drawImage(image,-width/2,-height/2);ctx.restore();canvas.toBlob(blob=>{if(!blob)return alert('이미지 저장에 실패했어요.');const a=document.createElement('a'),url=URL.createObjectURL(blob),ext=format.value==='image/png'?'png':format.value==='image/webp'?'webp':'jpg';a.href=url;a.download=fileName+'_rotated.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)},format.value,parseInt(quality.value,10)/100)};
+updateUI();
+</script>
+</body></html>
