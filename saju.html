@@ -49,7 +49,7 @@
 <main>
 <section class="category-hero"><p class="eyebrow">WOLHWA SAJU</p><h1>무료 사주 <span>만세력</span></h1><p>한국식 사주명리학의 기본 명식을 정확하게 계산해 보세요.</p></section>
 <section class="saju-wrap">
-<form class="saju-form" id="sajuForm">
+<form class="saju-form" id="sajuForm" autocomplete="off">
 <div class="saju-calendar-switch" role="tablist" aria-label="달력 선택">
   <button type="button" class="active" data-calendar="solar" aria-selected="true">양력</button>
   <button type="button" data-calendar="lunar" aria-selected="false">음력</button>
@@ -256,7 +256,7 @@ form.addEventListener('submit',async e=>{
     const crossPanel='<div class="saju-card"><div class="saju-kicker">LUCK × YEAR</div><h2>대운 × 2026 세운 교차</h2><p class="saju-lead">'+(activeLuck?'현재 나이 기준 <b>'+currentAge+'세</b> · 현재 대운 <b>'+safe(activeLuck.korean)+'</b> · '+safe(activeLuck.age)+'세 시작':'대운 계산값 확인 필요')+'</p><div class="saju-focus"><div><b>원국</b><span>'+analysis.state+' · 용신 후보 '+analysis.candidates[0]+'</span></div><div><b>대운</b><span>'+ (activeLuck?safe(activeLuck.pillar?.heavenlyStem)+safe(activeLuck.pillar?.earthlyBranch):'확인 필요')+'</span></div><div><b>2026</b><span>丙午 · '+annual2026(r).stemGod+'</span></div></div><p class="saju-note">'+crossText+' 대운은 장기 배경이고 세운은 그 안에서 작동하는 연간 자극으로 보며, 원국·대운·세운이 같은 방향으로 움직이는지 확인해.</p></div>';
     const luckVisualPanel=luck?'<div class="saju-panel"><h2>대운 흐름 한눈에 보기</h2><p class="saju-note">각 대운의 시작 나이를 기준으로 현재 위치를 자동 강조해.</p><div class="saju-luck-grid">'+luckCards+'</div></div>':'';
     const luckPanel=luck?'<div class="saju-panel"><h2>대운(大運)</h2><p class="saju-note"><b>'+ (luck.forward?'순행':'역행')+'</b> · 대운 시작 약 <b>'+safe(luck.startAge)+'세</b> · 세부 '+safe(luck.startYears)+'년 '+safe(luck.startMonths)+'개월 '+safe(luck.startDays)+'일</p><table class="saju-table"><thead><tr><th>시작 나이</th><th>대운</th><th>간·지</th></tr></thead><tbody>'+luckRows+'</tbody></table></div>':'';
-    const calendarPanel='<div class="saju-section-grid"><div class="saju-panel"><h2>입력 날짜 변환</h2><p class="saju-note">양력 '+solar.year+'-'+String(solar.month).padStart(2,'0')+'-'+String(solar.day).padStart(2,'0')+' · 음력 '+lunar.year+'년 '+lunar.month+'월 '+lunar.day+'일'+(lunar.isLeapMonth?' (윤달)':'')+'</p></div><div class="saju-panel"><h2>계산 설정</h2><p class="saju-note">'+(document.getElementById('solarTime').checked?'진태양시 보정 사용 · 출생지 '+(place.value||'미입력')+' 기준':'한국 표준시 그대로 계산')+' · '+document.getElementById('dayBoundary').selectedOptions[0].text+'</p></div></div>';
+    const calendarPanel='<div class="saju-section-grid"><div class="saju-panel"><h2>입력 날짜 변환</h2><p class="saju-note">양력 '+solar.year+'-'+String(solar.month).padStart(2,'0')+'-'+String(solar.day).padStart(2,'0')+' · 음력 '+lunar.year+'년 '+lunar.month+'월 '+lunar.day+'일'+(lunar.isLeapMonth?' (윤달)':'')+'</p></div><div class="saju-panel"><h2>계산 설정</h2><p class="saju-note">입력한 생년월일·출생시간·성별·출생지를 기준으로 계산해.</p></div></div>';
 
     result.innerHTML=pillarTable+info+strengthPanel+advancedPanel+tenPanel+elementPanel+hiddenPanel+relationPanel+annualPanel+crossPanel+timelinePanel+annualDetailPanel+fieldReading+luckVisualPanel+luckPanel+calendarPanel+'<div class="saju-card"><div class="saju-kicker">DETAILED READING</div><h2>상세 사주 풀이</h2>'+longInterpret(r,counts,ten,luck)+'</div><div class="saju-panel"><h2>해석할 때 알아둘 점</h2><p class="saju-note">이 결과는 한국식 사주명리학에서 사용하는 계산값을 바탕으로 한 참고용 풀이야. 절기·진태양시·자시 경계에 따라 일부 만세력과 결과가 달라질 수 있어. 또한 용신·희신·격국·신살·12운성 등은 학파와 계산법에 따라 차이가 있으므로, 오행 개수만으로 길흉을 단정하지 않아.</p></div>';
     result.scrollIntoView({behavior:'smooth',block:'start'});
