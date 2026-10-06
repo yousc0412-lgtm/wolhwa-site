@@ -98,6 +98,18 @@ yearEl.value='';
 monthEl.value='';
 dayEl.value='';
 document.getElementById('gender').value='';
+window.addEventListener('pageshow',()=>{
+  form.reset();
+  calendar='solar';
+  leapWrap.hidden=true;
+  unknownTime.checked=false;
+  time.disabled=false;
+  time.value='';
+  yearEl.value='';
+  monthEl.value='';
+  dayEl.value='';
+  document.getElementById('gender').value='';
+});
 let calendar='solar';
 
 const stems=['갑','을','병','정','무','기','경','신','임','계'];
