@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>스톱워치 타이머 | 월화</title>
+<meta name="description" content="공부, 운동, 작업 시간 측정에 사용할 수 있는 간편한 월화 스톱워치입니다.">
+<link rel="stylesheet" href="style.css">
+<style>
+.timer-wrap{max-width:720px;margin:0 auto}.timer-card{background:#fff;border:1px solid #e8e8e8;border-radius:24px;padding:32px;text-align:center;box-shadow:0 12px 35px rgba(0,0,0,.06)}
+.display{font-size:clamp(3.2rem,10vw,6rem);font-variant-numeric:tabular-nums;letter-spacing:-.05em;margin:20px 0 28px;font-weight:800}.laps{margin-top:24px;text-align:left;max-height:260px;overflow:auto;border-top:1px solid #eee}.lap{display:flex;justify-content:space-between;padding:12px 4px;border-bottom:1px solid #eee;font-variant-numeric:tabular-nums}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.controls button,.lap-btn{border:0;border-radius:12px;padding:13px 20px;font-weight:700;cursor:pointer}.primary{background:#111;color:#fff}.secondary{background:#f1f1f1;color:#111}.hint{color:#777;font-size:.92rem}
+@media(max-width:600px){.timer-card{padding:22px}.controls button{flex:1;min-width:110px}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="월화 홈"><span class="brand-mark">月花</span><span>월화 <b>타이머</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">WOLHWA STOPWATCH</p><h1>시간을 재는 가장<br><span>간단한 방법.</span></h1><p>공부, 운동, 작업 시간을 초 단위로 측정하고 기록해보세요.</p></section>
+<section class="section timer-wrap"><div class="timer-card">
+<div class="display" id="display">00:00:00.0</div>
+<div class="controls"><button class="primary" id="startBtn">시작</button><button class="secondary" id="lapBtn" disabled>랩 기록</button><button class="secondary" id="resetBtn">초기화</button></div>
+<p class="hint">시작 → 랩 기록 → 초기화 순서로 간편하게 사용할 수 있어요.</p>
+<div class="laps" id="laps"></div>
+</div></section></main>
+<footer class="site-footer"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>타이머</b></span></a><p>필요한 시간을 간단하게 측정해보세요.</p></footer>
+<script>
+let startTime=0,elapsed=0,timer=null,lapCount=0;
+const display=document.getElementById('display'),startBtn=document.getElementById('startBtn'),lapBtn=document.getElementById('lapBtn'),resetBtn=document.getElementById('resetBtn'),laps=document.getElementById('laps');
+function format(ms){let t=Math.max(0,ms),h=Math.floor(t/3600000),m=Math.floor(t%3600000/60000),s=Math.floor(t%60000/1000),d=Math.floor(t%1000/100);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d}
+function render(){elapsed=Date.now()-startTime;display.textContent=format(elapsed)}
+function start(){if(timer)return;startTime=Date.now()-elapsed;timer=setInterval(render,50);startBtn.textContent='일시정지';lapBtn.disabled=false}
+function pause(){clearInterval(timer);timer=null;startBtn.textContent='계속'}
+startBtn.onclick=()=>timer?pause():start();
+lapBtn.onclick=()=>{if(!timer)return;lapCount++;const row=document.createElement('div');row.className='lap';row.innerHTML='<span>랩 '+lapCount+'</span><strong>'+format(elapsed)+'</strong>';laps.prepend(row)};
+resetBtn.onclick=()=>{pause();elapsed=0;lapCount=0;display.textContent=format(0);laps.innerHTML='';startBtn.textContent='시작';lapBtn.disabled=true};
+</script>
+</body></html>
