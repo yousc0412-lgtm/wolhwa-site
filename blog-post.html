@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>월화 블로그</title>
+<meta name="description" content="월화 블로그 게시글">
+<link rel="stylesheet" href="style.css">
+<style>
+.post-page{max-width:860px;margin:0 auto;padding:48px 20px 80px}
+.post-card{background:#fff;border:1px solid #e5e5e5;border-radius:20px;padding:32px}
+.post-date{color:#777;font-size:14px;margin-bottom:10px}
+.post-title{font-size:clamp(30px,5vw,48px);line-height:1.15;margin:0 0 28px}
+.post-body{font-size:17px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.post-actions{margin-top:36px;display:flex;gap:10px;flex-wrap:wrap}
+.post-actions a{display:inline-block;padding:11px 16px;border-radius:10px;background:#171717;color:#fff;text-decoration:none}
+.error{padding:30px;text-align:center;color:#777}
+</style>
+</head>
+<body>
+<header class="site-header">
+<a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>블로그</b></span></a>
+<nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">도구</a><a href="blog.html">블로그</a></nav>
+</header>
+<main class="post-page">
+<article class="post-card" id="post"><div class="error">게시글을 불러오는 중…</div></article>
+</main>
+<footer class="site-footer"><a href="about.html">월화 소개</a> · <a href="contact.html">문의하기</a> · <a href="privacy.html">개인정보 처리 안내</a> · <a href="terms.html">이용약관</a> · <a href="disclaimer.html">면책·주의사항</a></footer>
+<script>
+const root=document.getElementById('post');
+const id=new URLSearchParams(location.search).get('id');
+function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function load(){
+  if(!id){root.innerHTML='<div class="error">게시글 주소가 올바르지 않습니다.</div>';return}
+  try{
+    const r=await fetch('/api/posts');
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'게시글을 불러오지 못했습니다.');
+    const p=(d.posts||[]).find(x=>String(x.id)===String(id));
+    if(!p){root.innerHTML='<div class="error">게시글을 찾을 수 없습니다.</div>';return}
+    const date=p.created_at?new Date(p.created_at).toLocaleDateString('ko-KR'):'';
+    root.innerHTML='<div class="post-date">'+esc(date)+'</div><h1 class="post-title">'+esc(p.title)+'</h1><div class="post-body">'+esc(p.body)+'</div><div class="post-actions"><a href="blog.html">블로그 목록으로</a></div>';
+    document.title=esc(p.title)+' | 월화 블로그';
+  }catch(e){root.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+load();
+</script>
+</body>
+</html>
