@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이미지 워터마크 넣기 | 월화</title>
+<meta name="description" content="JPG, PNG, WebP 이미지에 텍스트 워터마크를 넣고 위치, 투명도, 크기를 조절해 저장하는 무료 이미지 도구.">
+<link rel="stylesheet" href="style.css">
+<style>
+.wm-tool{max-width:1000px;margin:0 auto;padding:0 20px 80px}.wm-panel{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px}
+.drop-zone{border:1px dashed var(--line);border-radius:18px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--surface-2)}
+.drop-zone.dragover{border-color:var(--accent)}.drop-zone strong{display:block;font-size:18px;margin-bottom:8px}.drop-zone small{color:var(--muted)}
+.file-input{display:none}.wm-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;margin-top:20px}
+.preview-box{min-height:480px;border:1px solid var(--line);border-radius:18px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+.preview-box canvas{max-width:100%;max-height:650px;object-fit:contain}.settings{border:1px solid var(--line);border-radius:18px;padding:18px}
+.settings label{display:block;color:var(--muted);font-size:13px;margin:0 0 7px}.field{margin-bottom:16px}.settings input,.settings select{width:100%;box-sizing:border-box;background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px}
+.range-row{display:flex;justify-content:space-between;align-items:center}.settings input[type=range]{padding:0}.color-row{display:flex;gap:10px;align-items:center}.color-row input[type=color]{width:48px;height:40px;padding:3px}
+.actions{display:flex;gap:10px;margin-top:8px}.actions button{flex:1;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:12px;padding:12px;cursor:pointer}.actions .primary{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700}
+.hint{color:var(--muted);font-size:13px;line-height:1.6;margin-top:15px}
+@media(max-width:780px){.wm-grid{grid-template-columns:1fr}.preview-box{min-height:300px}.wm-panel{padding:16px}}
+</style></head>
+<body>
+<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">IMAGE WATERMARK</p><h1>이미지에<br><span>내 이름을 남겨요.</span></h1><p>사진에 텍스트 워터마크를 넣고 위치·크기·투명도를 조절해 저장하세요.</p></section>
+<section class="wm-tool"><div class="wm-panel">
+<label class="drop-zone" id="dropZone" for="fileInput"><strong>이미지를 여기에 끌어놓거나 클릭해서 선택</strong><small>JPG · PNG · WebP 지원 / 브라우저에서 바로 처리</small><input id="fileInput" class="file-input" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<div class="wm-grid"><div class="preview-box"><canvas id="canvas"></canvas></div>
+<aside class="settings">
+<div class="field"><label for="text">워터마크 문구</label><input id="text" type="text" value="WOLHWA"></div>
+<div class="field"><label for="position">위치</label><select id="position"><option value="br">오른쪽 아래</option><option value="bl">왼쪽 아래</option><option value="tr">오른쪽 위</option><option value="tl">왼쪽 위</option><option value="center">가운데</option></select></div>
+<div class="field"><div class="range-row"><label for="size">글자 크기</label><b id="sizeValue">6%</b></div><input id="size" type="range" min="2" max="15" value="6"></div>
+<div class="field"><div class="range-row"><label for="opacity">투명도</label><b id="opacityValue">65%</b></div><input id="opacity" type="range" min="10" max="100" value="65"></div>
+<div class="field"><label for="color">글자 색상</label><div class="color-row"><input id="color" type="color" value="#ffffff"><span>미리보기에서 바로 확인</span></div></div>
+<div class="field"><label for="format">저장 형식</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div>
+<div class="field"><div class="range-row"><label for="quality">JPG·WebP 품질</label><b id="qualityValue">90%</b></div><input id="quality" type="range" min="10" max="100" value="90"></div>
+<div class="actions"><button type="button" id="reset">초기화</button><button type="button" class="primary" id="download">워터마크 저장</button></div>
+<p class="hint">이미지는 서버로 업로드하지 않고 브라우저에서 처리합니다. JPG 저장 시 투명 영역은 흰색 배경으로 바뀔 수 있어요.</p>
+</aside></div></div></section></main>
+<footer class="site-footer"><a class="brand" href="image-tools.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const fileInput=document.getElementById('fileInput'),dropZone=document.getElementById('dropZone'),canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),text=document.getElementById('text'),position=document.getElementById('position'),size=document.getElementById('size'),opacity=document.getElementById('opacity'),color=document.getElementById('color'),format=document.getElementById('format'),quality=document.getElementById('quality');
+const sizeValue=document.getElementById('sizeValue'),opacityValue=document.getElementById('opacityValue'),qualityValue=document.getElementById('qualityValue');
+let image=new Image(),objectUrl='',fileName='wolhwa-image',loaded=false;
+function setFile(file){if(!file||!file.type.startsWith('image/'))return;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);image=new Image();image.onload=()=>{loaded=true;draw()};image.src=objectUrl;fileName=file.name.replace(/\.[^.]+$/,'')||'wolhwa-image'}
+function draw(){
+ if(!loaded)return;canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0);
+ const label=text.value.trim();if(!label)return;
+ const fontSize=Math.max(12,Math.round(Math.min(canvas.width,canvas.height)*(Number(size.value)/100)));
+ ctx.font='700 '+fontSize+'px Arial, sans-serif';ctx.textBaseline='middle';const metrics=ctx.measureText(label), pad=Math.max(12,Math.round(fontSize*.65));
+ let x,y;const p=position.value;
+ if(p==='br'){x=canvas.width-pad-metrics.width;y=canvas.height-pad-fontSize/2}
+ else if(p==='bl'){x=pad;y=canvas.height-pad-fontSize/2}
+ else if(p==='tr'){x=canvas.width-pad-metrics.width;y=pad+fontSize/2}
+ else if(p==='tl'){x=pad;y=pad+fontSize/2}
+ else{x=(canvas.width-metrics.width)/2;y=canvas.height/2}
+ ctx.save();ctx.globalAlpha=Number(opacity.value)/100;ctx.fillStyle=color.value;ctx.fillText(label,x,y);ctx.restore();
+}
+fileInput.addEventListener('change',e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
+dropZone.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+[text,position,size,opacity,color,format].forEach(el=>el.addEventListener('input',()=>{sizeValue.textContent=size.value+'%';opacityValue.textContent=opacity.value+'%';draw()}));
+quality.addEventListener('input',()=>qualityValue.textContent=quality.value+'%');
+document.getElementById('reset').onclick=()=>{text.value='WOLHWA';position.value='br';size.value=6;opacity.value=65;color.value='#ffffff';format.value='image/jpeg';quality.value=90;sizeValue.textContent='6%';opacityValue.textContent='65%';qualityValue.textContent='90%';draw()};
+document.getElementById('download').onclick=()=>{if(!loaded)return alert('먼저 이미지를 선택해주세요.');draw();const mime=format.value;if(mime==='image/jpeg'){const bg=document.createElement('canvas');bg.width=canvas.width;bg.height=canvas.height;const b=bg.getContext('2d');b.fillStyle='#fff';b.fillRect(0,0,bg.width,bg.height);b.drawImage(canvas,0,0);bg.toBlob(save,mime,Number(quality.value)/100)}else canvas.toBlob(save,mime,Number(quality.value)/100);function save(blob){if(!blob)return alert('이미지 저장에 실패했어요.');const a=document.createElement('a'),url=URL.createObjectURL(blob),ext=mime==='image/png'?'png':mime==='image/webp'?'webp':'jpg';a.href=url;a.download=fileName+'_watermark.'+ext;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}};
+</script></body></html>
