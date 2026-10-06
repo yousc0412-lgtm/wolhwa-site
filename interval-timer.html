@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인터벌 타이머 | 월화</title><meta name="description" content="운동, HIIT, 홈트레이닝에 활용할 수 있는 월화 인터벌 타이머입니다.">
+<link rel="stylesheet" href="style.css">
+<style>
+.timer-wrap{max-width:760px;margin:0 auto;padding:32px 20px 70px}.timer-box{background:#111;border-radius:24px;padding:28px;color:#fff;text-align:center}.phase{font-size:18px;opacity:.75}.time{font-size:clamp(64px,14vw,120px);font-weight:800;letter-spacing:-4px;margin:12px 0 22px}.round{font-size:16px;opacity:.75}.progress{height:8px;background:#333;border-radius:99px;overflow:hidden;margin:22px 0}.progress i{display:block;height:100%;width:0;background:#fff;transition:width .2s}.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.controls button,.settings button{border:0;border-radius:12px;padding:12px 18px;font-size:15px;cursor:pointer}.primary{background:#fff;color:#111}.settings{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.settings label{display:flex;flex-direction:column;gap:7px;text-align:left;font-size:13px}.settings input{padding:11px;border:1px solid #ddd;border-radius:10px;font-size:16px}.presets{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.presets button{flex:1;min-width:110px}.note{margin-top:18px;color:#777;font-size:13px}@media(max-width:600px){.settings{grid-template-columns:1fr}.timer-box{padding:22px 16px}}
+</style></head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="월화 홈"><span class="brand-mark">月花</span><span>월화 <b>타이머</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">INTERVAL TIMER</p><h1>운동할 땐<br><span>인터벌로.</span></h1><p>운동과 휴식을 자동으로 반복해주는 간단한 인터벌 타이머</p></section>
+<div class="timer-wrap"><div class="timer-box"><div class="phase" id="phase">운동 준비</div><div class="time" id="time">00:30</div><div class="round" id="round">1 / 8 라운드</div><div class="progress"><i id="bar"></i></div><div class="controls"><button class="primary" id="start">시작</button><button id="pause">일시정지</button><button id="reset">초기화</button></div></div>
+<div class="presets"><button data-w="20" data-r="10" data-n="8">타바타 20/10</button><button data-w="30" data-r="10" data-n="8">HIIT 30/10</button><button data-w="40" data-r="20" data-n="6">운동 40/20</button></div>
+<div class="settings"><label>운동 시간(초)<input id="work" type="number" min="1" max="3600" value="30"></label><label>휴식 시간(초)<input id="rest" type="number" min="1" max="3600" value="10"></label><label>라운드 수<input id="rounds" type="number" min="1" max="99" value="8"></label></div>
+<p class="note">운동 → 휴식 → 다음 라운드 순서로 자동 진행됩니다. 완료 시 알림음이 재생됩니다.</p></div></main>
+<footer class="site-footer"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>타이머</b></span></a><p>운동과 집중에 필요한 타이머를 한곳에서.</p></footer>
+<script>
+let timer=null,remaining=30,phase='work',round=1,running=false;
+const $=id=>document.getElementById(id);
+function vals(){return{w:Math.max(1,+$('work').value||30),r:Math.max(1,+$('rest').value||10),n:Math.max(1,+$('rounds').value||8)}}
+function render(){const v=vals(),total=phase==='work'?v.w:v.r;$('phase').textContent=phase==='work'?'운동':'휴식';$('time').textContent=String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');$('round').textContent=round+' / '+v.n+' 라운드';$('bar').style.width=Math.max(0,Math.min(100,(1-remaining/total)*100))+'%'}
+function beep(){try{const c=new AudioContext(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(c.currentTime+.18)}catch(e){}}
+function tick(){remaining--;if(remaining<=0){beep();const v=vals();if(phase==='work'){phase='rest';remaining=v.r}else if(round<v.n){round++;phase='work';remaining=v.w}else{running=false;clearInterval(timer);timer=null;$('phase').textContent='완료';$('time').textContent='00:00';$('round').textContent=v.n+' / '+v.n+' 라운드 완료';$('bar').style.width='100%';return}}render()}
+function start(){if(running)return;running=true;if(remaining<=0) resetState();timer=setInterval(tick,1000);render()}
+function resetState(){clearInterval(timer);timer=null;running=false;phase='work';round=1;remaining=vals().w;render()}
+$('start').onclick=start;$('pause').onclick=()=>{running=false;clearInterval(timer);timer=null};$('reset').onclick=resetState;
+document.querySelectorAll('.presets button').forEach(b=>b.onclick=()=>{$('work').value=b.dataset.w;$('rest').value=b.dataset.r;$('rounds').value=b.dataset.n;resetState()});
+['work','rest','rounds'].forEach(id=>$(id).onchange=resetState);render();
+</script></body></html>
