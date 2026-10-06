@@ -135,17 +135,17 @@ const elemMeaning={
 목:'성장·확장·시작·기획·학습',화:'표현·열정·추진·주목·활동성',토:'현실·관리·안정·책임·축적',금:'기준·결단·정리·실행·완성도',수:'정보·유연성·이동·관찰·소통'
 };
 
-function addOptions(el, start, end, suffix=''){ for(let i=start;i<=end;i++) el.add(new Option(i+suffix,i)); }
+function addOptions(el, start, end, suffix='', placeholder=true){ if(placeholder) el.add(new Option('선택','')); for(let i=start;i<=end;i++) el.add(new Option(i+suffix,i)); }
 addOptions(yearEl,1800,2300,'년'); addOptions(monthEl,1,12,'월'); addOptions(dayEl,1,31,'일');
 yearEl.value=''; monthEl.value=''; dayEl.value='';
 
 function refreshDays(){
   const y=Number(yearEl.value), m=Number(monthEl.value);
-  const max=calendar==='lunar'?30:new Date(y,m,0).getDate();
-  const current=Number(dayEl.value)||1;
+  const max=!y||!m?31:(calendar==='lunar'?30:new Date(y,m,0).getDate());
+  const current=Number(dayEl.value)||0;
   dayEl.innerHTML='';
   addOptions(dayEl,1,max,'일');
-  dayEl.value=Math.min(current,max);
+  dayEl.value=current?String(Math.min(current,max)):'';
 }
 monthEl.addEventListener('change',refreshDays); yearEl.addEventListener('change',refreshDays);
 
