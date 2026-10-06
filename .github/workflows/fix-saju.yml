@@ -1,0 +1,64 @@
+name: Fix saju.html runtime initialization
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fix saju initialization order and stale UI text
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("saju.html")
+          s = p.read_text(encoding="utf-8")
+
+          old = """form.reset();
+calendar='solar';
+leapWrap.hidden=true;"""
+          new = """let calendar='solar';
+form.reset();
+calendar='solar';
+leapWrap.hidden=true;"""
+          if old not in s:
+              raise SystemExit("Expected initialization block not found")
+          s = s.replace(old, new, 1)
+
+          old2 = "let calendar='solar';\n\nconst stems="
+          new2 = "const stems="
+          if old2 not in s:
+              raise SystemExit("Expected late calendar declaration not found")
+          s = s.replace(old2, new2, 1)
+
+          old3 = '출생한 도시만 입력해줘. 진태양시 보정을 사용할 경우 도시 기준 위치를 내부적으로 적용해.'
+          new3 = '출생한 도시만 입력해줘.'
+          s = s.replace(old3, new3)
+
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add saju.html
+          git diff --cached --quiet && exit 0
+          git commit -m "사주 입력 초기화 순서 오류 수정"
+          git push
+
+      - name: Remove temporary workflow
+        if: success()
+        shell: bash
+        run: |
+          git rm .github/workflows/fix-saju.yml
+          git commit -m "임시 사주 수정 워크플로 제거"
+          git push
