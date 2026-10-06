@@ -67,12 +67,7 @@
 <div class="saju-field"><label for="gender">성별</label><select id="gender"><option value="">성별 선택</option><option value="male">남성</option><option value="female">여성</option></select></div>
 <div class="saju-field"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 인천, 서울, 제주, 부산" autocomplete="off"><p class="saju-muted" id="placeHint">출생한 도시만 입력해줘. 진태양시 보정을 사용할 경우 도시 기준 위치를 내부적으로 적용해.</p></div>
 <div class="saju-field" id="leapWrap" hidden><label for="isLeap">음력 윤달</label><select id="isLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
-<div class="saju-options">
-<label><input id="solarTime" type="checkbox"> 진태양시 보정</label>
-<label><input id="equation" type="checkbox" checked> 균시차 보정</label>
-<select id="dayBoundary" aria-label="자시 날짜 경계"><option value="midnight">자시 날짜 경계: 자정 기준</option><option value="jasi">자시 날짜 경계: 23시 기준</option><option value="splitJasi">자시: 일주는 자정·시주 천간은 23시</option></select>
-</div>
-<p class="saju-help">양력·음력을 위에서 바로 전환할 수 있어. 음력은 윤달 여부까지 선택하고, 입력한 날짜를 기준으로 사주와 양력/음력 날짜를 함께 계산해줘.</p>
+
 <button class="saju-button" type="submit">무료 사주 만세력 보기</button>
 </form>
 <div id="result" class="saju-result" hidden></div>
@@ -229,8 +224,8 @@ form.addEventListener('submit',async e=>{
   result.hidden=false; result.innerHTML='<div class="saju-panel"><p class="saju-note">정밀 만세력 계산 중…</p></div>';
   try{
     const v=getValues(), timeUnknown=unknownTime.checked, [hh,mm]=(time.value||'10:00').split(':').map(Number);
-    const opts={year:v.year,month:v.month,day:v.day,hour:timeUnknown?12:hh,minute:timeUnknown?0:mm,isLunar:calendar==='lunar',isLeapMonth:calendar==='lunar'&&leapEl.value==='true',gender:document.getElementById('gender').value,dayBoundary:document.getElementById('dayBoundary').value};
-    if(document.getElementById('solarTime').checked) opts.trueSolarTime={longitude:getBirthLongitude(),applyEquationOfTime:document.getElementById('equation').checked,applyHistoricalDst:true};
+    const opts={year:v.year,month:v.month,day:v.day,hour:timeUnknown?12:hh,minute:timeUnknown?0:mm,isLunar:calendar==='lunar',isLeapMonth:calendar==='lunar'&&leapEl.value==='true',gender:document.getElementById('gender').value,dayBoundary:'midnight'};
+    
     const r=calculateFourPillars(opts), counts=elementCounts(r), ten=r.tenGods||{}, luck=r.luckPillars;
     const solar=calendar==='lunar'?lunarToSolar(v.year,v.month,v.day,opts.isLeapMonth):v;
     const lunar=solarToLunar(solar.year,solar.month,solar.day);
