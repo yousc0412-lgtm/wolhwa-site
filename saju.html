@@ -88,6 +88,16 @@ const cityLongitude={서울:126.98,인천:126.56,부천:126.77,수원:127.03,성
 function getBirthLongitude(){const raw=place.value.trim().replace(/광역시|특별시|특별자치시|특별자치도|도|시|군|구/g,'');const key=Object.keys(cityLongitude).find(k=>raw.includes(k));return key?cityLongitude[key]:127;}
 place.addEventListener('input',()=>{const key=Object.keys(cityLongitude).find(k=>place.value.includes(k));placeHint.textContent=key?key+' 기준으로 계산해.':'도시 이름을 입력해줘. 대한민국 주요 도시는 자동 인식해.';});
 unknownTime.addEventListener('change',()=>{time.disabled=unknownTime.checked;time.title=unknownTime.checked?'출생시간 미상으로 시주는 참고하지 않아.':'';});
+form.reset();
+calendar='solar';
+leapWrap.hidden=true;
+unknownTime.checked=false;
+time.disabled=false;
+time.value='';
+yearEl.value='';
+monthEl.value='';
+dayEl.value='';
+document.getElementById('gender').value='';
 let calendar='solar';
 
 const stems=['갑','을','병','정','무','기','경','신','임','계'];
