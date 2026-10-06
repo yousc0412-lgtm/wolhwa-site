@@ -65,7 +65,7 @@
 </div>
 <div class="saju-field"><label for="birthTime">출생시간</label><input id="birthTime" type="time" value="10:00"><label class="saju-time-unknown"><input id="unknownTime" type="checkbox"> 출생시간 모름</label></div>
 <div class="saju-field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
-<div class="saju-field"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 인천광역시 미추홀구 또는 제주도 서귀포시" autocomplete="off"><div class="saju-place-row"><input id="longitude" type="number" min="124" max="132" step="0.0001" value="126.56" placeholder="경도 °E"><button type="button" class="saju-place-btn" id="placeApply">경도 적용</button></div><p class="saju-muted" id="placeHint">출생지를 입력하고 실제 경도(동경)를 직접 입력해줘. 진태양시 보정을 켜면 이 경도를 사용해.</p></div>
+<div class="saju-field"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 인천, 서울, 제주, 부산" autocomplete="off"><p class="saju-muted" id="placeHint">출생한 도시만 입력해줘. 진태양시 보정을 사용할 경우 도시 기준 위치를 내부적으로 적용해.</p></div>
 <div class="saju-field" id="leapWrap" hidden><label for="isLeap">음력 윤달</label><select id="isLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="saju-options">
 <label><input id="solarTime" type="checkbox"> 진태양시 보정</label>
@@ -88,8 +88,10 @@ const result=document.getElementById('result');
 const yearEl=document.getElementById('birthYear'), monthEl=document.getElementById('birthMonth'), dayEl=document.getElementById('birthDay');
 const time=document.getElementById('birthTime'), unknownTime=document.getElementById('unknownTime'), leapEl=document.getElementById('isLeap'), leapWrap=document.getElementById('leapWrap');
 const hint=document.getElementById('calendarHint');
-const place=document.getElementById('birthPlace'), longitude=document.getElementById('longitude'), placeApply=document.getElementById('placeApply'), placeHint=document.getElementById('placeHint');
-placeApply.addEventListener('click',()=>{const v=Number(longitude.value);placeHint.textContent=(v>=124&&v<=132)?'경도 '+v.toFixed(4)+'°E가 적용돼.':'대한민국 출생지라면 보통 124~132°E 범위야.';});
+const place=document.getElementById('birthPlace'), placeHint=document.getElementById('placeHint');
+const cityLongitude={서울:126.98,인천:126.56,부천:126.77,수원:127.03,성남:127.13,고양:126.83,용인:127.18,안양:126.93,안산:126.83,화성:126.83,평택:127.11,김포:126.72,파주:126.78,의정부:127.05,남양주:127.22,하남:127.21,광명:126.86,시흥:126.80,군포:126.95,오산:127.07,구리:127.13,강릉:128.90,춘천:127.73,원주:127.95,청주:127.49,충주:127.93,대전:127.38,천안:127.15,전주:127.15,익산:126.96,군산:126.71,광주:126.85,목포:126.39,여수:127.66,순천:127.49,대구:128.60,포항:129.34,경주:129.22,울산:129.31,부산:129.07,창원:128.68,제주:126.53,서귀포:126.56};
+function getBirthLongitude(){const raw=place.value.trim().replace(/광역시|특별시|특별자치시|특별자치도|도|시|군|구/g,'');const key=Object.keys(cityLongitude).find(k=>raw.includes(k));return key?cityLongitude[key]:127;}
+place.addEventListener('input',()=>{const key=Object.keys(cityLongitude).find(k=>place.value.includes(k));placeHint.textContent=key?key+' 기준으로 계산해.':'도시 이름을 입력해줘. 대한민국 주요 도시는 자동 인식해.';});
 unknownTime.addEventListener('change',()=>{time.disabled=unknownTime.checked;time.title=unknownTime.checked?'출생시간 미상으로 시주는 참고하지 않아.':'';});
 let calendar='solar';
 
@@ -228,7 +230,7 @@ form.addEventListener('submit',async e=>{
   try{
     const v=getValues(), timeUnknown=unknownTime.checked, [hh,mm]=(time.value||'10:00').split(':').map(Number);
     const opts={year:v.year,month:v.month,day:v.day,hour:timeUnknown?12:hh,minute:timeUnknown?0:mm,isLunar:calendar==='lunar',isLeapMonth:calendar==='lunar'&&leapEl.value==='true',gender:document.getElementById('gender').value,dayBoundary:document.getElementById('dayBoundary').value};
-    if(document.getElementById('solarTime').checked) opts.trueSolarTime={longitude:Number(longitude.value),applyEquationOfTime:document.getElementById('equation').checked,applyHistoricalDst:true};
+    if(document.getElementById('solarTime').checked) opts.trueSolarTime={longitude:getBirthLongitude(),applyEquationOfTime:document.getElementById('equation').checked,applyHistoricalDst:true};
     const r=calculateFourPillars(opts), counts=elementCounts(r), ten=r.tenGods||{}, luck=r.luckPillars;
     const solar=calendar==='lunar'?lunarToSolar(v.year,v.month,v.day,opts.isLeapMonth):v;
     const lunar=solarToLunar(solar.year,solar.month,solar.day);
@@ -259,7 +261,7 @@ form.addEventListener('submit',async e=>{
     const crossPanel='<div class="saju-card"><div class="saju-kicker">LUCK × YEAR</div><h2>대운 × 2026 세운 교차</h2><p class="saju-lead">'+(activeLuck?'현재 나이 기준 <b>'+currentAge+'세</b> · 현재 대운 <b>'+safe(activeLuck.korean)+'</b> · '+safe(activeLuck.age)+'세 시작':'대운 계산값 확인 필요')+'</p><div class="saju-focus"><div><b>원국</b><span>'+analysis.state+' · 용신 후보 '+analysis.candidates[0]+'</span></div><div><b>대운</b><span>'+ (activeLuck?safe(activeLuck.pillar?.heavenlyStem)+safe(activeLuck.pillar?.earthlyBranch):'확인 필요')+'</span></div><div><b>2026</b><span>丙午 · '+annual2026(r).stemGod+'</span></div></div><p class="saju-note">'+crossText+' 대운은 장기 배경이고 세운은 그 안에서 작동하는 연간 자극으로 보며, 원국·대운·세운이 같은 방향으로 움직이는지 확인해.</p></div>';
     const luckVisualPanel=luck?'<div class="saju-panel"><h2>대운 흐름 한눈에 보기</h2><p class="saju-note">각 대운의 시작 나이를 기준으로 현재 위치를 자동 강조해.</p><div class="saju-luck-grid">'+luckCards+'</div></div>':'';
     const luckPanel=luck?'<div class="saju-panel"><h2>대운(大運)</h2><p class="saju-note"><b>'+ (luck.forward?'순행':'역행')+'</b> · 대운 시작 약 <b>'+safe(luck.startAge)+'세</b> · 세부 '+safe(luck.startYears)+'년 '+safe(luck.startMonths)+'개월 '+safe(luck.startDays)+'일</p><table class="saju-table"><thead><tr><th>시작 나이</th><th>대운</th><th>간·지</th></tr></thead><tbody>'+luckRows+'</tbody></table></div>':'';
-    const calendarPanel='<div class="saju-section-grid"><div class="saju-panel"><h2>입력 날짜 변환</h2><p class="saju-note">양력 '+solar.year+'-'+String(solar.month).padStart(2,'0')+'-'+String(solar.day).padStart(2,'0')+' · 음력 '+lunar.year+'년 '+lunar.month+'월 '+lunar.day+'일'+(lunar.isLeapMonth?' (윤달)':'')+'</p></div><div class="saju-panel"><h2>계산 설정</h2><p class="saju-note">'+(document.getElementById('solarTime').checked?'진태양시 보정 사용 · 경도 '+longitude.value+'°E':'한국 표준시 그대로 계산')+' · '+document.getElementById('dayBoundary').selectedOptions[0].text+'</p></div></div>';
+    const calendarPanel='<div class="saju-section-grid"><div class="saju-panel"><h2>입력 날짜 변환</h2><p class="saju-note">양력 '+solar.year+'-'+String(solar.month).padStart(2,'0')+'-'+String(solar.day).padStart(2,'0')+' · 음력 '+lunar.year+'년 '+lunar.month+'월 '+lunar.day+'일'+(lunar.isLeapMonth?' (윤달)':'')+'</p></div><div class="saju-panel"><h2>계산 설정</h2><p class="saju-note">'+(document.getElementById('solarTime').checked?'진태양시 보정 사용 · 출생지 '+(place.value||'미입력')+' 기준:'한국 표준시 그대로 계산')+' · '+document.getElementById('dayBoundary').selectedOptions[0].text+'</p></div></div>';
 
     result.innerHTML=pillarTable+info+strengthPanel+advancedPanel+tenPanel+elementPanel+hiddenPanel+relationPanel+annualPanel+crossPanel+timelinePanel+annualDetailPanel+fieldReading+luckVisualPanel+luckPanel+calendarPanel+'<div class="saju-card"><div class="saju-kicker">DETAILED READING</div><h2>상세 사주 풀이</h2>'+longInterpret(r,counts,ten,luck)+'</div><div class="saju-panel"><h2>해석할 때 알아둘 점</h2><p class="saju-note">이 결과는 한국식 사주명리학에서 사용하는 계산값을 바탕으로 한 참고용 풀이야. 절기·진태양시·자시 경계에 따라 일부 만세력과 결과가 달라질 수 있어. 또한 용신·희신·격국·신살·12운성 등은 학파와 계산법에 따라 차이가 있으므로, 오행 개수만으로 길흉을 단정하지 않아.</p></div>';
     result.scrollIntoView({behavior:'smooth',block:'start'});
