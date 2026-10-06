@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이미지 크기 조절 | 월화</title>
+<meta name="description" content="JPG, PNG, WebP 이미지의 가로·세로 크기를 원하는 픽셀로 조절하세요.">
+<link rel="stylesheet" href="style.css">
+<style>
+.tool-box{max-width:860px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px}
+.drop-zone{border:1px dashed var(--line);border-radius:18px;padding:42px 20px;text-align:center;background:var(--surface-2);cursor:pointer;transition:.2s}.drop-zone.dragover{border-color:var(--accent);transform:translateY(-2px)}.drop-zone input{display:none}.drop-zone strong{display:block;font-size:1.15rem;margin-bottom:8px}.drop-zone small{color:var(--muted)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.field{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:16px}.field label{display:block;font-weight:700;margin-bottom:9px}.field input,.field select{width:100%;box-sizing:border-box;background:var(--surface-3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px}.dimensions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dimensions input{min-width:0}
+.check{display:flex!important;align-items:center;gap:8px}.check input{width:auto!important}.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.tool-button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer;background:var(--accent);color:#10120d}.tool-button.secondary{background:var(--surface-3);color:var(--text);border:1px solid var(--line)}.tool-button:disabled{opacity:.45;cursor:not-allowed}
+.info,.result{margin-top:20px;padding:18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{padding:14px;background:var(--surface-3);border-radius:12px}.stat small{display:block;color:var(--muted);margin-bottom:5px}.stat strong{font-size:1.05rem}.preview{margin-top:18px;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px}.preview img{display:block;width:100%;max-height:420px;object-fit:contain;background:#0b0d0f;border-radius:10px}.note{color:var(--muted);font-size:.9rem;line-height:1.7;margin-top:18px}
+@media(max-width:700px){.tool-box{padding:18px}.controls,.dimensions,.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="월화 홈"><span class="brand-mark">月花</span><span>월화 <b>이미지 크기 조절</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main>
+<section class="category-hero"><p class="eyebrow">IMAGE RESIZER</p><h1>이미지 크기를<br><span>원하는 대로.</span></h1><p>가로·세로 픽셀을 지정해 이미지 크기를 바꿔보세요. 브라우저에서 바로 처리합니다.</p></section>
+<section class="section"><div class="tool-box">
+<label class="drop-zone" id="dropZone"><input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp"><strong>이미지를 선택하거나 여기로 끌어다 놓으세요</strong><small>JPG · PNG · WebP 지원</small></label>
+<div class="info" id="info" hidden></div>
+<div class="controls">
+<div class="field"><label>새 이미지 크기 (px)</label><div class="dimensions"><input id="width" type="number" min="1" step="1" placeholder="가로"><input id="height" type="number" min="1" step="1" placeholder="세로"></div><label class="check"><input id="lock" type="checkbox" checked> 비율 유지</label></div>
+<div class="field"><label for="format">저장 형식</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select></div>
+</div>
+<div class="action-row"><button class="tool-button" id="resizeBtn" disabled>크기 조절하기</button><button class="tool-button secondary" id="downloadBtn" disabled>변경된 이미지 다운로드</button><button class="tool-button secondary" id="resetBtn">초기화</button></div>
+<div class="result" id="result" hidden><strong>변경 결과</strong><div class="stats"><div class="stat"><small>원본 크기</small><strong id="beforeDim">-</strong></div><div class="stat"><small>변경 크기</small><strong id="afterDim">-</strong></div><div class="stat"><small>파일 크기</small><strong id="afterSize">-</strong></div></div></div>
+<div class="preview" id="preview" hidden><img id="previewImg" alt="크기 조절 결과 미리보기"></div>
+<p class="note">※ 비율 유지를 켜면 가로 또는 세로 값을 바꿀 때 다른 값이 자동으로 계산됩니다. 이미지는 현재 브라우저에서 처리되며 서버로 업로드하지 않습니다.</p>
+</div></section></main>
+<footer class="site-footer"><a class="brand" href="downloads.html"><span class="brand-mark">月花</span><span>월화 <b>다운로드·도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const $=id=>document.getElementById(id);let file=null,img=null,outBlob=null,outUrl=null,srcUrl=null;
+const drop=$('dropZone'),input=$('fileInput'),w=$('width'),h=$('height'),lock=$('lock'),format=$('format');
+const fmt=b=>{if(!b)return'0 B';const u=['B','KB','MB','GB'],i=Math.min(Math.floor(Math.log(b)/Math.log(1024)),3);return(b/1024**i).toFixed(i?2:0)+' '+u[i]};
+function clearUrls(){if(srcUrl)URL.revokeObjectURL(srcUrl);if(outUrl)URL.revokeObjectURL(outUrl);srcUrl=outUrl=null}
+function setFile(f){if(!f||!f.type.startsWith('image/'))return;clearUrls();file=f;srcUrl=URL.createObjectURL(f);img=new Image();img.onload=()=>{w.value=img.naturalWidth;h.value=img.naturalHeight;$('info').hidden=false;$('info').textContent=f.name+' · '+img.naturalWidth+' × '+img.naturalHeight+' px · '+fmt(f.size);$('resizeBtn').disabled=false};img.src=srcUrl;$('result').hidden=true;$('preview').hidden=true;$('downloadBtn').disabled=true}
+input.addEventListener('change',e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('dragover')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('dragover')}));
+drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+w.addEventListener('input',()=>{if(lock.checked&&img&&img.naturalWidth){h.value=Math.max(1,Math.round(Number(w.value)*img.naturalHeight/img.naturalWidth))}});
+h.addEventListener('input',()=>{if(lock.checked&&img&&img.naturalHeight){w.value=Math.max(1,Math.round(Number(h.value)*img.naturalWidth/img.naturalHeight))}});
+$('resizeBtn').addEventListener('click',async()=>{if(!img)return;const width=Math.max(1,Math.round(Number(w.value))),height=Math.max(1,Math.round(Number(h.value)));if(!width||!height)return;
+const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');if(format.value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height)}ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,width,height);
+const blob=await new Promise(r=>canvas.toBlob(r,format.value,0.9));if(!blob)return;if(outUrl)URL.revokeObjectURL(outUrl);outBlob=blob;outUrl=URL.createObjectURL(blob);$('previewImg').src=outUrl;$('beforeDim').textContent=img.naturalWidth+' × '+img.naturalHeight+' px';$('afterDim').textContent=width+' × '+height+' px';$('afterSize').textContent=fmt(blob.size);$('result').hidden=false;$('preview').hidden=false;$('downloadBtn').disabled=false});
+$('downloadBtn').addEventListener('click',()=>{if(!outBlob)return;const ext=format.value==='image/png'?'png':format.value==='image/webp'?'webp':'jpg',base=file.name.replace(/\.[^.]+$/,'');const a=document.createElement('a');a.href=outUrl;a.download=base+'-resized.'+ext;a.click()});
+$('resetBtn').addEventListener('click',()=>{clearUrls();file=null;img=null;outBlob=null;input.value='';w.value='';h.value='';$('info').hidden=true;$('result').hidden=true;$('preview').hidden=true;$('resizeBtn').disabled=true;$('downloadBtn').disabled=true});
+</script>
+</body></html>
