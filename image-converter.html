@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JPG PNG WEBP 변환기 | 월화</title>
+<meta name="description" content="프로그램 설치 없이 JPG, PNG, WEBP 이미지를 원하는 형식으로 무료 변환하세요. 브라우저에서 바로 처리됩니다.">
+<link rel="stylesheet" href="style.css">
+<style>
+.converter{max-width:760px;margin:0 auto}.drop{border:1px dashed var(--line);background:var(--surface);border-radius:18px;padding:42px 20px;text-align:center;cursor:pointer}.drop.drag{border-color:var(--accent);background:var(--surface-2)}.drop strong{display:block;font-size:20px;margin-bottom:8px}.drop small{color:var(--muted)}.controls,.result{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}.field select{width:100%;box-sizing:border-box;background:var(--surface-2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px}.preview{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.preview-card{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:12px}.preview-card img{width:100%;height:220px;object-fit:contain;background:#0b0d0f;border-radius:10px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--accent);color:#10120d}.btn-secondary{background:var(--surface-3);color:var(--text);border:1px solid var(--line)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{background:var(--surface-2);border-radius:12px;padding:13px}.stat small{display:block;color:var(--muted);margin-bottom:5px}.notice{color:var(--muted);font-size:13px;line-height:1.6;margin-top:14px}@media(max-width:700px){.preview,.stats{grid-template-columns:1fr}.preview-card img{height:180px}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 변환기</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main><section class="category-hero"><p class="eyebrow">IMAGE CONVERTER</p><h1>이미지 형식을<br><span>바로 바꿔보세요.</span></h1><p>JPG·PNG·WEBP를 프로그램 설치 없이 브라우저에서 변환할 수 있어요.</p></section>
+<section class="section converter">
+<div id="drop" class="drop"><strong>이미지를 여기에 놓거나 클릭해서 선택</strong><small>JPG · PNG · WEBP 지원 · 파일은 서버로 업로드되지 않아요.</small><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>
+<div class="controls"><div class="field"><label for="format">변환할 형식</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div><div class="actions"><button id="convert" class="btn btn-primary" disabled>변환하기</button><button id="reset" class="btn btn-secondary">초기화</button></div><p id="status" class="notice">이미지를 먼저 선택해 주세요.</p></div>
+<div id="result" class="result" hidden><div class="stats"><div class="stat"><small>원본 형식</small><b id="from">-</b></div><div class="stat"><small>변환 형식</small><b id="to">-</b></div><div class="stat"><small>파일 크기</small><b id="size">-</b></div></div><div class="preview"><div class="preview-card"><small>원본</small><img id="originalPreview" alt="원본 이미지 미리보기"></div><div class="preview-card"><small>변환 결과</small><img id="convertedPreview" alt="변환 결과 미리보기"></div></div><div class="actions"><a id="download" class="btn btn-primary" download>변환 파일 다운로드</a></div></div>
+</section></main>
+<footer class="site-footer"><a class="brand" href="image-tools.html"><span class="brand-mark">月花</span><span>월화 <b>이미지 도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const fileInput=document.querySelector('#file'),drop=document.querySelector('#drop'),convert=document.querySelector('#convert'),reset=document.querySelector('#reset'),format=document.querySelector('#format'),status=document.querySelector('#status'),result=document.querySelector('#result'),originalPreview=document.querySelector('#originalPreview'),convertedPreview=document.querySelector('#convertedPreview'),download=document.querySelector('#download');
+let file=null,sourceUrl='',resultUrl='';
+const names={'image/jpeg':'JPG','image/png':'PNG','image/webp':'WEBP'};
+function choose(f){if(!f||!f.type.startsWith('image/'))return;file=f;if(sourceUrl)URL.revokeObjectURL(sourceUrl);sourceUrl=URL.createObjectURL(f);originalPreview.src=sourceUrl;convert.disabled=false;result.hidden=true;status.textContent='이미지가 선택됐어요. 원하는 형식을 골라 변환하세요.'}
+drop.onclick=()=>fileInput.click();fileInput.onchange=e=>choose(e.target.files[0]);
+['dragenter','dragover'].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop',e=>choose(e.dataTransfer.files[0]));
+function bytes(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB'}
+convert.onclick=()=>{
+ if(!file)return;
+ const img=new Image();img.onload=()=>{
+  const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext('2d');
+  if(format.value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height)}
+  ctx.drawImage(img,0,0);
+  canvas.toBlob(blob=>{
+   if(!blob){status.textContent='변환에 실패했어요. 다른 이미지를 시도해 주세요.';return}
+   if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl=URL.createObjectURL(blob);convertedPreview.src=resultUrl;download.href=resultUrl;download.download=(file.name.replace(/\.[^.]+$/,'')||'image')+'.'+names[format.value].toLowerCase();
+   document.querySelector('#from').textContent=names[file.type]||file.type;document.querySelector('#to').textContent=names[format.value];document.querySelector('#size').textContent=bytes(blob.size);result.hidden=false;status.textContent='변환이 완료됐어요. 결과 파일을 바로 다운로드할 수 있어요.'
+  },format.value,format.value==='image/jpeg'||format.value==='image/webp'?0.92:undefined);
+ };img.src=sourceUrl;
+};
+reset.onclick=()=>{if(sourceUrl)URL.revokeObjectURL(sourceUrl);if(resultUrl)URL.revokeObjectURL(resultUrl);file=null;sourceUrl='';resultUrl='';fileInput.value='';convert.disabled=true;result.hidden=true;status.textContent='이미지를 먼저 선택해 주세요.';originalPreview.removeAttribute('src');convertedPreview.removeAttribute('src')};
+</script>
+</body></html>
