@@ -39,7 +39,7 @@ async function load(){
     const p=(d.posts||[]).find(x=>String(x.id)===String(id));
     if(!p){root.innerHTML='<div class="error">게시글을 찾을 수 없습니다.</div>';return}
     const date=p.created_at?new Date(p.created_at).toLocaleDateString('ko-KR'):'';
-    root.innerHTML='<div class="post-date">'+esc(date)+'</div><h1 class="post-title">'+esc(p.title)+'</h1><div class="post-body">'+esc(p.body)+'</div><div class="post-actions"><a href="blog.html">블로그 목록으로</a></div>';
+    root.innerHTML='<div class="post-date">'+esc(date)+'</div><h1 class="post-title">'+esc(p.title)+'</h1><div class="post-body">'+renderBody(p.body)+'</div><div class="post-actions"><a href="blog.html">블로그 목록으로</a></div>';
     document.title=esc(p.title)+' | 월화 블로그';
   }catch(e){root.innerHTML='<div class="error">'+esc(e.message)+'</div>'}
 }
