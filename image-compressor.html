@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이미지 용량 줄이기 | 월화</title>
+<meta name="description" content="JPG, PNG, WebP 이미지를 브라우저에서 간편하게 압축하고 다운로드하세요.">
+<link rel="stylesheet" href="style.css">
+<style>
+.tool-box{max-width:860px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px}
+.drop-zone{border:1px dashed var(--line);border-radius:18px;padding:42px 20px;text-align:center;background:var(--surface-2);cursor:pointer;transition:.2s}
+.drop-zone.dragover{border-color:var(--accent);transform:translateY(-2px)}
+.drop-zone input{display:none}.drop-zone strong{display:block;font-size:1.15rem;margin-bottom:8px}.drop-zone small{color:var(--muted)}
+.tool-controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.tool-field{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.tool-field label{display:block;font-weight:700;margin-bottom:9px}.tool-field input,.tool-field select{width:100%;box-sizing:border-box;background:var(--surface-3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.tool-button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer;background:var(--accent);color:#10120d}.tool-button.secondary{background:var(--surface-3);color:var(--text);border:1px solid var(--line)}.tool-button:disabled{opacity:.45;cursor:not-allowed}
+.file-info,.result{margin-top:20px;padding:18px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.stat{padding:14px;background:var(--surface-3);border-radius:12px}.stat small{display:block;color:var(--muted);margin-bottom:5px}.stat strong{font-size:1.05rem}
+.preview{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.preview figure{margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:12px}.preview img{width:100%;height:280px;object-fit:contain;background:#0b0d0f;border-radius:10px}.preview figcaption{font-size:.85rem;color:var(--muted);margin-top:8px}
+.note{color:var(--muted);font-size:.9rem;line-height:1.7;margin-top:18px}
+@media(max-width:700px){.tool-box{padding:18px}.tool-controls,.preview,.stats{grid-template-columns:1fr}.preview img{height:220px}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html" aria-label="월화 홈"><span class="brand-mark">月花</span><span>월화 <b>이미지 용량 줄이기</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">다운로드·도구</a><a href="blog.html">블로그</a></nav></header>
+<main>
+<section class="category-hero"><p class="eyebrow">IMAGE COMPRESSOR</p><h1>이미지 용량을<br><span>가볍게.</span></h1><p>이미지를 선택하면 브라우저에서 바로 압축해요. 서버에 이미지를 업로드하지 않습니다.</p></section>
+<section class="section"><div class="tool-box">
+<label class="drop-zone" id="dropZone"><input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp"><strong>이미지를 선택하거나 여기로 끌어다 놓으세요</strong><small>JPG · PNG · WebP 지원</small></label>
+<div class="tool-controls">
+<div class="tool-field"><label for="quality">압축 품질 <span id="qualityValue">80</span>%</label><input id="quality" type="range" min="10" max="100" value="80"></div>
+<div class="tool-field"><label for="format">저장 형식</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select></div>
+</div>
+<div class="action-row"><button class="tool-button" id="compressBtn" disabled>이미지 압축하기</button><button class="tool-button secondary" id="downloadBtn" disabled>압축 이미지 다운로드</button><button class="tool-button secondary" id="resetBtn">초기화</button></div>
+<div class="file-info" id="fileInfo" hidden></div>
+<div class="result" id="result" hidden><strong>압축 결과</strong><div class="stats"><div class="stat"><small>원본</small><strong id="originalSize">-</strong></div><div class="stat"><small>압축 후</small><strong id="compressedSize">-</strong></div><div class="stat"><small>용량 감소</small><strong id="reduction">-</strong></div></div></div>
+<div class="preview" id="preview" hidden><figure><img id="originalPreview" alt="원본 이미지 미리보기"><figcaption>원본</figcaption></figure><figure><img id="compressedPreview" alt="압축 이미지 미리보기"><figcaption>압축 결과</figcaption></figure></div>
+<p class="note">※ 이미지 처리는 현재 사용 중인 브라우저에서 이루어집니다. PNG는 품질 설정이 파일 크기에 큰 영향을 주지 않을 수 있으며, 투명 배경이 중요한 PNG는 JPG로 변환할 때 배경이 달라질 수 있어요.</p>
+</div></section></main>
+<footer class="site-footer"><a class="brand" href="downloads.html"><span class="brand-mark">月花</span><span>월화 <b>다운로드·도구</b></span></a><p><a href="image-tools.html">← 이미지 도구로 돌아가기</a></p></footer>
+<script>
+const $=id=>document.getElementById(id);
+let file=null, outputBlob=null, outputUrl=null, originalUrl=null;
+const drop=$('dropZone'), input=$('fileInput'), quality=$('quality'), format=$('format');
+const fmtBytes=b=>{if(!b)return '0 B';const u=['B','KB','MB','GB'];const i=Math.min(Math.floor(Math.log(b)/Math.log(1024)),u.length-1);return (b/1024**i).toFixed(i?2:0)+' '+u[i]};
+function clearUrls(){if(originalUrl)URL.revokeObjectURL(originalUrl);if(outputUrl)URL.revokeObjectURL(outputUrl);originalUrl=outputUrl=null}
+function setFile(f){if(!f||!f.type.startsWith('image/'))return;file=f;clearUrls();originalUrl=URL.createObjectURL(f);$('originalPreview').src=originalUrl;$('compressBtn').disabled=false;$('fileInfo').hidden=false;$('fileInfo').textContent=f.name+' · '+fmtBytes(f.size);$('result').hidden=true;$('preview').hidden=false;$('downloadBtn').disabled=true}
+input.addEventListener('change',e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover')}));
+drop.addEventListener('drop',e=>setFile(e.dataTransfer.files[0]));
+quality.addEventListener('input',()=>{$('qualityValue').textContent=quality.value});
+$('compressBtn').addEventListener('click',async()=>{
+ if(!file)return;
+ const img=new Image();img.src=originalUrl;await img.decode();
+ const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+ const ctx=canvas.getContext('2d');
+ if(format.value==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height)}
+ ctx.drawImage(img,0,0);
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,format.value,Number(quality.value)/100));
+ if(!blob)return;
+ if(outputUrl)URL.revokeObjectURL(outputUrl);outputBlob=blob;outputUrl=URL.createObjectURL(blob);
+ $('compressedPreview').src=outputUrl;$('originalSize').textContent=fmtBytes(file.size);$('compressedSize').textContent=fmtBytes(blob.size);
+ const pct=(1-blob.size/file.size)*100;$('reduction').textContent=(pct>=0?pct.toFixed(1)+'% 감소':Math.abs(pct).toFixed(1)+'% 증가');
+ $('result').hidden=false;$('downloadBtn').disabled=false;
+});
+$('downloadBtn').addEventListener('click',()=>{if(!outputBlob)return;const ext=format.value==='image/png'?'png':format.value==='image/webp'?'webp':'jpg';const base=file.name.replace(/\.[^.]+$/,'');const a=document.createElement('a');a.href=outputUrl;a.download=base+'-compressed.'+ext;a.click()});
+$('resetBtn').addEventListener('click',()=>{clearUrls();file=null;outputBlob=null;input.value='';$('fileInfo').hidden=true;$('result').hidden=true;$('preview').hidden=true;$('compressBtn').disabled=true;$('downloadBtn').disabled=true});
+</script>
+</body>
+</html>
