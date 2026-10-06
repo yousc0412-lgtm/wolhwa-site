@@ -61,18 +61,42 @@ export async function onRequestGet({ request, env }) {
       return json({ error: "Instagram 게시물 정보를 찾지 못했습니다. 공개 게시물인지 확인해 주세요." }, 404);
     }
 
-    const row = rows[0];
-    if (row?.error || row?._error || row?.status === "failed" || row?.is_unavailable === true) {
-      return json({ error: row.error || row._errorDetail || row._error || "해당 게시물을 가져올 수 없습니다. 공개 게시물인지 확인해 주세요." }, 404);
+    const validRows = rows.filter((row) =>
+      row && !row.error && !row._error &&
+      row.status !== "failed" && row.status !== "not_found" &&
+      row.status !== "is_private" && row.status !== "blocked" &&
+      row.is_unavailable !== true
+    );
+
+    if (!validRows.length) {
+      const row = rows[0];
+      return json({
+        error: row?.status
+          ? "해당 게시물을 가져올 수 없습니다. (" + row.status + ")"
+          : (row?.error || row?._error || "해당 게시물을 가져올 수 없습니다. 공개 게시물인지 확인해 주세요.")
+      }, 404);
     }
 
-    const images = extractImages(row);
+    // Some Actor versions return one post record containing media_items;
+    // others may return multiple media records. Aggregate every row so
+    // a carousel is never reduced to only the first dataset item.
+    const images = [];
+    const seen = new Set();
+    for (const row of validRows) {
+      for (const image of extractImages(row)) {
+        if (!seen.has(image)) {
+          seen.add(image);
+          images.push(image);
+        }
+      }
+    }
+
     if (!images.length) {
       return json({ error: "게시물은 확인했지만 이미지 주소를 찾지 못했습니다. 잠시 후 다시 시도해 주세요." }, 404);
     }
 
     return json({
-      source: row.post_url || row.url || target,
+      source: validRows[0]?.post_url || validRows[0]?.url || target,
       images: images.slice(0, 30)
     });
   } catch (error) {
