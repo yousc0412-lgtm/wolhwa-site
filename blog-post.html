@@ -11,7 +11,7 @@
 .post-card{background:#fff;border:1px solid #e5e5e5;border-radius:20px;padding:32px}
 .post-date{color:#777;font-size:14px;margin-bottom:10px}
 .post-title{font-size:clamp(30px,5vw,48px);line-height:1.15;margin:0 0 28px}
-.post-body{font-size:17px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.post-body img{display:block;max-width:100%;height:auto;margin:24px auto;border-radius:14px;border:1px solid #eee}
+.post-body{font-size:17px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.post-link{color:#1769e0;text-decoration:underline;text-underline-offset:3px;word-break:break-all;display:inline-block;padding:2px 0;touch-action:manipulation}.post-body img{display:block;max-width:100%;height:auto;margin:24px auto;border-radius:14px;border:1px solid #eee}
 .post-actions{margin-top:36px;display:flex;gap:10px;flex-wrap:wrap}
 .post-actions a{display:inline-block;padding:11px 16px;border-radius:10px;background:#171717;color:#fff;text-decoration:none}
 .error{padding:30px;text-align:center;color:#777}
@@ -30,7 +30,19 @@
 const root=document.getElementById('post');
 const id=new URLSearchParams(location.search).get('id');
 function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function renderBody(v){return String(v??'').split(/(\[IMAGE:https?:\/\/[^\]]+\])/g).map(part=>{const m=part.match(/^\[IMAGE:(https?:\/\/[^\]]+)\]$/);if(m)return '<img src="'+esc(m[1])+'" alt="게시글 이미지" loading="lazy">';return esc(part)}).join('')}
+function renderBody(v){
+  return String(v??'').split(/(\\[IMAGE:https?:\\/\\/[^\\]]+\\])/g).map(part=>{
+    const m=part.match(/^\\[IMAGE:(https?:\\/\\/[^\\]]+)\\]$/);
+    if(m)return '<img src="'+esc(m[1])+'" alt="게시글 이미지" loading="lazy">';
+    let s=esc(part);
+    s=s.replace(/(https?:\\/\\/[^\\s<]+)/g,(url)=>{
+      let clean=url,tail='';
+      while(/[.,!?;:)\\]\\}\\'"]$/.test(clean)){tail=clean.slice(-1)+tail;clean=clean.slice(0,-1)}
+      return '<a class="post-link" href="'+clean+'" target="_blank" rel="noopener noreferrer">'+clean+'</a>'+tail;
+    });
+    return s;
+  }).join('');
+}
 async function load(){
   if(!id){root.innerHTML='<div class="error">게시글 주소가 올바르지 않습니다.</div>';return}
   try{
