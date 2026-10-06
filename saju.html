@@ -65,7 +65,7 @@
 </div>
 <div class="saju-field"><label for="birthTime">출생시간</label><div class="saju-time-row"><input id="birthTime" type="time" value=""><label class="saju-time-unknown"><input id="unknownTime" type="checkbox"> 출생시간 모름</label></div></div>
 <div class="saju-field"><label for="gender">성별</label><select id="gender"><option value="">성별 선택</option><option value="male">남성</option><option value="female">여성</option></select></div>
-<div class="saju-field"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 인천, 서울, 제주, 부산" autocomplete="off"><p class="saju-muted" id="placeHint">출생한 도시만 입력해줘. 진태양시 보정을 사용할 경우 도시 기준 위치를 내부적으로 적용해.</p></div>
+<div class="saju-field"><label for="birthPlace">출생지</label><input id="birthPlace" type="text" placeholder="예: 인천, 서울, 제주, 부산" autocomplete="off"><p class="saju-muted" id="placeHint">출생한 도시만 입력해줘.</p></div>
 <div class="saju-field" id="leapWrap" hidden><label for="isLeap">음력 윤달</label><select id="isLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 
 <button class="saju-button" type="submit">무료 사주 만세력 보기</button>
@@ -88,6 +88,7 @@ const cityLongitude={서울:126.98,인천:126.56,부천:126.77,수원:127.03,성
 function getBirthLongitude(){const raw=place.value.trim().replace(/광역시|특별시|특별자치시|특별자치도|도|시|군|구/g,'');const key=Object.keys(cityLongitude).find(k=>raw.includes(k));return key?cityLongitude[key]:127;}
 place.addEventListener('input',()=>{const key=Object.keys(cityLongitude).find(k=>place.value.includes(k));placeHint.textContent=key?key+' 기준으로 계산해.':'도시 이름을 입력해줘. 대한민국 주요 도시는 자동 인식해.';});
 unknownTime.addEventListener('change',()=>{time.disabled=unknownTime.checked;time.title=unknownTime.checked?'출생시간 미상으로 시주는 참고하지 않아.':'';});
+let calendar='solar';
 form.reset();
 calendar='solar';
 leapWrap.hidden=true;
@@ -110,8 +111,6 @@ window.addEventListener('pageshow',()=>{
   dayEl.value='';
   document.getElementById('gender').value='';
 });
-let calendar='solar';
-
 const stems=['갑','을','병','정','무','기','경','신','임','계'];
 const branches=['자','축','인','묘','진','사','오','미','신','유','술','해'];
 const stemHanja=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
