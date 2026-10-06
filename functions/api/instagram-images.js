@@ -4,9 +4,13 @@ export async function onRequestGet({ request }) {
   if (!target) return json({ error: "url이 필요합니다." }, 400);
 
   let u;
-  try { u = new URL(target); } catch { return json({ error: "올바른 URL이 아닙니다." }, 400); }
+  try {
+    // Instagram에서 복사한 URL은 공백이나 추적 파라미터가 붙어올 수 있어도 정상 처리합니다.
+    target = target.trim().replace(/[<>]/g, "");
+    u = new URL(target);
+  } catch { return json({ error: "올바른 Instagram URL이 아닙니다. 게시물 주소 전체를 붙여넣어 주세요." }, 400); }
   if (!["instagram.com", "www.instagram.com", "m.instagram.com"].includes(u.hostname) ||
-      !/^\/(p|reel|tv)\//.test(u.pathname)) {
+      !/^\/(?:share\/)?(p|reel|tv)\//.test(u.pathname)) {
     return json({ error: "Instagram 게시물/릴스 URL만 지원합니다." }, 400);
   }
 
