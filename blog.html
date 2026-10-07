@@ -8,9 +8,10 @@
   const section=document.getElementById('adminPostsSection');
   if(!box||!section)return;
   try{
-    const r=await fetch('/api/posts');
+    const r=await fetch('/api/posts?public=1&_='+Date.now(),{cache:'no-store'});
     const d=await r.json();
-    if(!r.ok||!Array.isArray(d.posts)||!d.posts.length)return;
+    if(!r.ok)throw new Error(d.error||'게시물을 불러오지 못했습니다.');
+    if(!Array.isArray(d.posts)||!d.posts.length){section.style.display='';box.innerHTML='<p style="color:#777;padding:10px 0">아직 등록된 게시물이 없습니다.</p>';return;}
     section.style.display='';
     box.innerHTML=d.posts.slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).map(p=>{
       const id=encodeURIComponent(p.id);
@@ -20,6 +21,6 @@
       const safe=summary.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
       return '<a class="directory-card" href="blog-post.html?id='+id+'"><strong>'+title+'</strong><small>'+safe+'</small><b>읽기 ↗</b></a>';
     }).join('');
-  }catch(e){}
+  }catch(e){section.style.display='';box.innerHTML='<p style="color:#b00020;padding:10px 0">게시물을 불러오지 못했습니다: '+String(e.message||e)+'</p>';}
 })();
 </script></body></html>
