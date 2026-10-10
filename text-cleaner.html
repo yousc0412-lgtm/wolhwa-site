@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>텍스트 공백·줄바꿈 정리 도구 | 월화</title>
+<meta name="description" content="텍스트의 불필요한 공백과 빈 줄, 줄 앞뒤 공백을 정리하세요. 원문은 서버로 전송하지 않고 브라우저에서 처리합니다.">
+<meta name="theme-color" content="#0f1113"><link rel="stylesheet" href="style.css">
+<style>
+.cleaner{max-width:1000px;margin:0 auto;padding:38px 20px 76px}.cleaner h1{font-size:clamp(30px,5vw,44px);line-height:1.25}.cleaner .lead{color:#aeb4b8;line-height:1.8}.cleaner-panel{background:#111416;border:1px solid #2b3034;border-radius:18px;padding:20px;margin:22px 0}.cleaner label{display:block;margin:10px 0;color:#d4d8db}.cleaner textarea{width:100%;min-height:190px;box-sizing:border-box;padding:14px;border:1px solid #3a4146;border-radius:12px;background:#0b0d0e;color:#edf0f2;font:inherit;line-height:1.7;resize:vertical}.cleaner .options{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:4px 16px}.cleaner .options label{display:flex;gap:9px;align-items:flex-start}.cleaner input[type=checkbox]{margin-top:5px;accent-color:#b9d86a}.cleaner .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.cleaner button{border:1px solid #454c51;border-radius:10px;padding:10px 15px;background:#202529;color:#edf0f2;cursor:pointer;font:inherit}.cleaner button.primary{background:#b9d86a;color:#111;border-color:#b9d86a;font-weight:700}.cleaner .stats{color:#aeb4b8;font-size:14px;margin-top:10px}.cleaner .hint{font-size:14px;color:#9da3a8;line-height:1.7}.cleaner a{color:#c5e783;text-decoration:underline}@media(max-width:600px){.cleaner-panel{padding:14px}.cleaner textarea{min-height:160px}}
+</style></head>
+<body><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>텍스트 도구</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">도구</a><a href="blog.html">블로그</a></nav></header>
+<main class="cleaner"><p class="eyebrow">TEXT CLEANER</p><h1>텍스트 공백·줄바꿈 정리</h1><p class="lead">복사한 문서나 게시글에 섞인 불필요한 공백을 정리해 보세요. 필요한 옵션만 선택하고 결과를 복사하면 됩니다.</p>
+<section class="cleaner-panel"><label for="source">원본 텍스트</label><textarea id="source" placeholder="공백이나 줄바꿈을 정리할 텍스트를 붙여 넣으세요."></textarea><div class="stats" id="sourceStats">원본 0자 · 0줄</div>
+<h2>정리 옵션</h2><div class="options">
+<label><input type="checkbox" id="trimLines" checked> 각 줄 앞뒤 공백 제거</label>
+<label><input type="checkbox" id="collapseSpaces" checked> 연속된 일반 공백을 하나로</label>
+<label><input type="checkbox" id="removeBlank"> 빈 줄 모두 제거</label>
+<label><input type="checkbox" id="collapseBlank" checked> 연속된 빈 줄을 한 줄로</label>
+<label><input type="checkbox" id="trimEdges" checked> 문서 처음·끝 공백 제거</label>
+<label><input type="checkbox" id="normalizeNewlines" checked> 줄바꿈 형식 통일</label>
+</div><div class="actions"><button class="primary" id="cleanBtn" type="button">텍스트 정리하기</button><button id="copyBtn" type="button">결과 복사</button><button id="replaceBtn" type="button">결과를 원본에 적용</button><button id="clearBtn" type="button">모두 지우기</button></div><p class="hint" id="status" aria-live="polite">옵션을 선택한 뒤 정리하기를 눌러 주세요.</p></section>
+<section class="cleaner-panel"><label for="result">정리 결과</label><textarea id="result" placeholder="정리한 결과가 여기에 표시됩니다." readonly></textarea><div class="stats" id="resultStats">결과 0자 · 0줄</div><p class="hint">개인정보나 중요한 문서는 복사 후 결과가 원하는 대로 유지됐는지 확인하세요. 이 도구는 문장의 의미나 맞춤법을 수정하지 않습니다.</p></section>
+<section class="cleaner-panel"><h2>함께 보면 좋은 글</h2><p><a href="blog-text-cleaner.html">텍스트 공백과 줄바꿈을 깔끔하게 정리하는 방법 →</a></p><p><a href="text-counter.html">글자수 세기 도구 →</a> · <a href="text-tools.html">텍스트 도구 모음 →</a></p></section>
+</main><footer class="site-footer"><a href="about.html">월화 소개</a> · <a href="contact.html">문의하기</a> · <a href="privacy.html">개인정보 처리 안내</a> · <a href="terms.html">이용약관</a> · <a href="disclaimer.html">면책·주의사항</a></footer>
+<script>
+const $=id=>document.getElementById(id);
+function stats(v){const lines=v===''?0:v.split(/\r\n|\r|\n/).length;return ' '+Array.from(v).length+'자 · '+lines+'줄'}
+function updateStats(){$('sourceStats').textContent='원본'+stats($('source').value);$('resultStats').textContent='결과'+stats($('result').value)}
+function cleanText(value){let text=value;if($('normalizeNewlines').checked)text=text.replace(/\r\n?/g,'\n');let lines=text.split(/\r\n|\r|\n/);if($('trimLines').checked)lines=lines.map(line=>line.trim());if($('collapseSpaces').checked)lines=lines.map(line=>line.replace(/[ \t]{2,}/g,' '));if($('removeBlank').checked)lines=lines.filter(line=>line.trim()!=='');else if($('collapseBlank').checked){const result=[];let blank=false;for(const line of lines){const isBlank=line.trim()==='';if(isBlank){if(!blank)result.push('');blank=true}else{result.push(line);blank=false}}lines=result}text=lines.join('\n');if($('trimEdges').checked)text=text.trim();return text}
+$('cleanBtn').onclick=()=>{$('result').value=cleanText($('source').value);updateStats();$('status').textContent='정리가 끝났어요. 결과를 확인하고 복사해 주세요.'};
+$('source').addEventListener('input',updateStats);
+$('copyBtn').onclick=async()=>{const text=$('result').value;if(!text){$('status').textContent='먼저 텍스트 정리하기를 눌러 주세요.';return}try{await navigator.clipboard.writeText(text);$('status').textContent='결과를 클립보드에 복사했어요.'}catch(e){$('result').focus();$('result').select();$('status').textContent='자동 복사가 제한됐어요. 선택된 결과를 직접 복사해 주세요.'}};
+$('replaceBtn').onclick=()=>{if(!$('result').value){$('status').textContent='먼저 텍스트 정리하기를 눌러 주세요.';return}$('source').value=$('result').value;updateStats();$('status').textContent='정리 결과를 원본 칸에 적용했어요.'};
+$('clearBtn').onclick=()=>{$('source').value='';$('result').value='';updateStats();$('status').textContent='입력과 결과를 모두 지웠어요.'};
+updateStats();
+</script></body></html>
