@@ -31,13 +31,13 @@ const root=document.getElementById('post');
 const id=new URLSearchParams(location.search).get('id');
 function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function renderBody(v){
-  return String(v??'').split(/(\\[IMAGE:https?:\\/\\/[^\\]]+\\])/g).map(part=>{
-    const m=part.match(/^\\[IMAGE:(https?:\\/\\/[^\\]]+)\\]$/);
+  return String(v??'').split(/(\[IMAGE:https?:\/\/[^\]]+\])/g).map(part=>{
+    const m=part.match(/^\[IMAGE:(https?:\/\/[^\]]+)\]$/);
     if(m)return '<img src="'+esc(m[1])+'" alt="게시글 이미지" loading="lazy">';
     let s=esc(part);
-    s=s.replace(/(https?:\\/\\/[^\\s<]+)/g,(url)=>{
+    s=s.replace(/(https?:\/\/[^\s<]+)/g,(url)=>{
       let clean=url,tail='';
-      while(/[.,!?;:)\\]\\}\\'"]$/.test(clean)){tail=clean.slice(-1)+tail;clean=clean.slice(0,-1)}
+      while(/[.,!?;:)\]\}\'"]$/.test(clean)){tail=clean.slice(-1)+tail;clean=clean.slice(0,-1)}
       return '<a class="post-link" href="'+clean+'" target="_blank" rel="noopener noreferrer">'+clean+'</a>'+tail;
     });
     return s;
