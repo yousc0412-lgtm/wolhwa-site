@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>글자수 세기 | 공백 포함·제외·단어·줄 수 계산 - 월화</title>
+<meta name="description" content="텍스트의 글자수를 공백 포함·제외 기준으로 세고 단어 수, 줄 수, UTF-8 바이트까지 확인하세요. 입력한 내용은 브라우저에서 계산합니다.">
+<meta name="theme-color" content="#0f1113"><link rel="stylesheet" href="style.css">
+<style>
+.counter-wrap{max-width:900px;margin:0 auto;padding:0 24px 72px}.counter-panel{background:#15181b;border:1px solid #292e33;border-radius:18px;padding:22px}.counter-panel textarea{width:100%;min-height:260px;resize:vertical;background:#0f1113;color:#e9ebed;border:1px solid #343a40;border-radius:12px;padding:16px;font:inherit;line-height:1.8;box-sizing:border-box}.counter-panel textarea:focus{outline:2px solid #b9d86a;outline-offset:2px}.counter-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.counter-stat{background:#1b1f23;border:1px solid #292e33;border-radius:12px;padding:16px}.counter-stat small{display:block;color:#9da3aa;font-size:12px}.counter-stat strong{display:block;font-size:25px;color:#e9ebed;overflow-wrap:anywhere}.counter-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.counter-actions button{border:1px solid #343a40;border-radius:10px;background:#20252a;color:#e9ebed;padding:10px 15px;font:inherit;cursor:pointer}.counter-actions .primary{background:#b9d86a;color:#111418;border-color:#b9d86a;font-weight:700}.counter-note{color:#9da3aa;font-size:13px}.counter-article{max-width:850px;margin:0 auto;padding:0 24px 72px}.counter-article h2{margin-top:34px}.counter-article p,.counter-article li{color:#bfc2c4;line-height:1.9}.counter-article a{color:#b9d86a;text-decoration:underline}@media(max-width:620px){.counter-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.counter-panel{padding:14px}.counter-stat{padding:12px}.counter-stat strong{font-size:21px}}
+</style>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">月花</span><span>월화 <b>글자수 세기</b></span></a><nav><a href="calculators.html">계산기</a><a href="timers.html">타이머</a><a href="downloads.html">도구</a><a href="blog.html">블로그</a></nav></header>
+<main>
+<section class="category-hero"><p class="eyebrow">WOLHWA TEXT TOOL</p><h1>글자수를<br><span>간편하게 확인.</span></h1><p>공백 포함·제외 글자수부터 단어, 줄, UTF-8 바이트까지 한 번에 확인하세요.</p></section>
+<section class="counter-wrap"><div class="counter-panel">
+<label for="textInput"><strong>텍스트 입력</strong></label>
+<textarea id="textInput" placeholder="글자수를 확인할 문장을 여기에 붙여넣으세요."></textarea>
+<div class="counter-stats" aria-live="polite">
+<div class="counter-stat"><small>공백 포함 글자수</small><strong id="withSpaces">0</strong></div>
+<div class="counter-stat"><small>공백 제외 글자수</small><strong id="withoutSpaces">0</strong></div>
+<div class="counter-stat"><small>단어 수</small><strong id="wordCount">0</strong></div>
+<div class="counter-stat"><small>줄 수</small><strong id="lineCount">0</strong></div>
+<div class="counter-stat"><small>UTF-8 바이트</small><strong id="byteCount">0</strong></div>
+<div class="counter-stat"><small>문장 수(기본 구두점 기준)</small><strong id="sentenceCount">0</strong></div>
+</div>
+<div class="counter-actions"><button class="primary" id="copyText" type="button">텍스트 복사</button><button id="clearText" type="button">전체 지우기</button></div>
+<p class="counter-note">입력한 텍스트는 이 페이지의 브라우저 안에서 계산되며 별도 서버로 전송하지 않습니다. 글자수 산정 방식은 제출처의 기준과 다를 수 있으니 최종 제출 전 해당 안내를 확인하세요.</p>
+<p id="copyStatus" class="counter-note" role="status"></p>
+</div></section>
+<section class="counter-article"><h2>글자수는 어떤 기준으로 세나요?</h2><p>글자수 제한은 공백을 포함하는지에 따라 결과가 달라집니다. 자기소개서, 온라인 게시글, 과제 등 제출처마다 기준이 다를 수 있으므로 공백 포함과 공백 제외 수치를 모두 확인하는 것이 안전합니다.</p><h2>각 항목의 의미</h2><ul><li><strong>공백 포함 글자수:</strong> 띄어쓰기와 줄바꿈을 포함해 입력한 텍스트의 글자 수를 셉니다.</li><li><strong>공백 제외 글자수:</strong> 공백 문자와 줄바꿈을 제외한 글자 수입니다.</li><li><strong>단어 수:</strong> 공백을 기준으로 나눈 단어의 수입니다.</li><li><strong>줄 수:</strong> 줄바꿈으로 구분된 행의 수입니다.</li><li><strong>UTF-8 바이트:</strong> 텍스트가 UTF-8로 인코딩될 때 차지하는 바이트 수입니다. 글자수와 바이트 수는 같은 개념이 아닙니다.</li></ul><h2>정확하게 확인하는 방법</h2><p>제출 양식에 ‘공백 포함 1,000자’처럼 명시되어 있다면 해당 기준을 우선하세요. 이 도구는 일반적인 확인을 돕기 위한 것으로, 특정 서비스의 내부 산정 규칙을 보장하지 않습니다.</p><p>다른 도구가 필요하다면 <a href="text-tools.html">월화 텍스트 도구 모음</a>을 확인하고, 글 작성 팁은 <a href="blog-text-counter.html">글자수 세기: 공백 포함과 제외의 차이</a>에서 더 자세히 읽을 수 있어요.</p></section>
+</main>
+<footer class="site-footer"><a href="about.html">월화 소개</a> · <a href="contact.html">문의하기</a> · <a href="privacy.html">개인정보 처리 안내</a> · <a href="terms.html">이용약관</a> · <a href="disclaimer.html">면책·주의사항</a></footer>
+<script>
+(()=>{const input=document.getElementById('textInput');const $=id=>document.getElementById(id);const fmt=n=>n.toLocaleString('ko-KR');function graphemes(s){if(typeof Intl!=='undefined'&&Intl.Segmenter){return [...new Intl.Segmenter('ko',{granularity:'grapheme'}).segment(s)].length;}return Array.from(s).length;}function update(){const s=input.value;const trimmed=s.trim();$('withSpaces').textContent=fmt(graphemes(s));$('withoutSpaces').textContent=fmt(graphemes(s.replace(/\s/gu,'')));$('wordCount').textContent=fmt(trimmed?trimmed.split(/\s+/u).length:0);$('lineCount').textContent=fmt(s.length?s.split(/\r\n|\r|\n/u).length:0);$('byteCount').textContent=fmt(new TextEncoder().encode(s).length);const sentences=s.match(/[^.!?。！？]+[.!?。！？]+|[^.!?。！？]+$/gu)||[];$('sentenceCount').textContent=fmt(sentences.filter(x=>x.trim()).length);$('copyStatus').textContent='';}input.addEventListener('input',update);$('clearText').addEventListener('click',()=>{input.value='';update();input.focus()});$('copyText').addEventListener('click',async()=>{if(!input.value){$('copyStatus').textContent='복사할 텍스트가 없습니다.';return;}try{await navigator.clipboard.writeText(input.value);$('copyStatus').textContent='텍스트를 복사했어요.';}catch(e){input.select();$('copyStatus').textContent='텍스트를 선택했어요. Ctrl+C로 복사해 주세요.';}});update();})();
+</script>
+</body></html>
