@@ -7,7 +7,8 @@ loan:{title:"대출 상환 계산기",fields:[["principal","대출 원금 (원)"
 savings:{title:"저축 계산기",fields:[["monthly","매월 저축액 (원)","number","300000"],["months","저축 기간 (개월)","number","12"],["rate","연 이자율 (%)","number","3"]],note:"매월 말에 저축하고 월복리로 계산한 단순 추정치이며 세금은 제외합니다."},
 convert:{title:"단위 변환기",fields:[["amount","변환할 값","number","100"]],note:"평과 제곱미터는 1평 = 약 3.305785㎡ 기준입니다."},
 age:{title:"만 나이 계산기",fields:[["birth","생년월일","date",""]],note:"오늘 날짜 기준으로 만 나이를 계산합니다."},
-salary:{title:"급여 환산 계산기",fields:[["amount","급여 금액 (원)","number","2500000"]],note:"세금과 4대 보험을 공제하기 전의 단순 환산이며 실수령액이 아닙니다."}
+salary:{title:"급여 환산 계산기",fields:[["amount","급여 금액 (원)","number","2500000"]],note:"세금과 4대 보험을 공제하기 전의 단순 환산이며 실수령액이 아닙니다."},
+smartstore:{title:"스마트스토어 수수료 계산기",fields:[["amount","판매금액 (원)","number","50000"],["rate","예상 수수료율 (%)","number","5.5"]],note:"입력한 판매금액과 예상 수수료율을 기준으로 수수료와 수수료 차감 후 금액을 계산합니다. 실제 적용 수수료율은 판매 조건에 따라 확인해 주세요."}
 };
 const spec=specs[tool];
 document.title=spec.title+" | 월화 계산기";
@@ -33,5 +34,6 @@ case"savings":{let m=n("monthly"),months=Math.floor(n("months")),r=n("rate")/120
 case"convert":{let a=n("amount"),map={"cm-m":[.01,"m"],"m-cm":[100,"cm"],"m-km":[.001,"km"],"km-m":[1000,"m"],"g-kg":[.001,"kg"],"kg-g":[1000,"g"],"inch-cm":[2.54,"cm"],"pyeong-m2":[3.305785,"㎡"],"m2-pyeong":[1/3.305785,"평"]},x=map[document.querySelector("#unit").value];show(nice(a*x[0])+" "+x[1]);break}
 case"age":{let s=document.querySelector("#birth").value;if(!s)return show("생년월일을 선택해 주세요.");let b=new Date(s+"T00:00:00"),d=new Date(),a=d.getFullYear()-b.getFullYear();if(d.getMonth()<b.getMonth()||(d.getMonth()===b.getMonth()&&d.getDate()<b.getDate()))a--;if(a<0)return show("미래 날짜는 입력할 수 없어요.");show(a+"세","오늘 날짜 기준 만 나이입니다.");break}
 case"salary":{let a=n("amount");if(a<0)return show("0 이상의 금액을 입력해 주세요.");if(document.querySelector("#mode").value==="monthly")show("연봉 "+won(a*12),`월 급여 ${won(a)} 기준 · 세전 단순 환산`);else show("월급 "+won(a/12),`연봉 ${won(a)} 기준 · 세전 단순 환산`);break}
+case"smartstore":{let a=n("amount"),r=n("rate");if(a<0||r<0||r>100)return show("입력값을 확인해 주세요.","판매금액은 0원 이상, 수수료율은 0~100%로 입력해 주세요.");show(won(a*(1-r/100)),`예상 수수료 ${won(a*r/100)} · 판매금액 ${won(a)} · 적용 수수료율 ${nice(r)}%`);break}
 }
 }catch(err){show("입력값을 확인해 주세요.","숫자를 올바르게 입력해 주세요.")}});
